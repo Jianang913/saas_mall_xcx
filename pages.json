@@ -1,5 +1,32 @@
 {
   "pages": [{
+    "path": "pages/dechome/index",
+    "style": {
+      "navigationBarTitleText": "首页",
+      "navigationStyle": "custom"
+    }
+  }, {
+    "path": "pages/classify/index",
+    "style": {
+      "navigationBarTitleText": "分类"
+    }
+  }, {
+    "path": "pages/cart/index",
+    "style": {
+      "navigationBarTitleText": "购物车"
+    }
+  }, {
+    "path": "pages/special/index",
+    "style": {
+      "navigationBarTitleText": "专题"
+    }
+  }, {
+    "path": "pages/mine/index",
+    "style": {
+      "navigationBarTitleText": "我的",
+      "navigationStyle": "custom"
+    }
+  }, {
     "path": "pages/login",
     "style": {
       "navigationBarTitleText": "登录"
@@ -10,25 +37,69 @@
       "navigationBarTitleText": "注册"
     }
   }, {
-    "path": "pages/index",
+    "path": "pages/goods/detail/index",
     "style": {
-      "navigationBarTitleText": "若依移动端框架",
-      "navigationStyle": "custom"
+      "navigationBarTitleText": "商品详情"
     }
   }, {
-    "path": "pages/work/index",
+    "path": "pages/search/index",
     "style": {
-      "navigationBarTitleText": "工作台"
+      "navigationBarTitleText": "搜索"
     }
   }, {
-    "path": "pages/mine/index",
+    "path": "pages/order/confirm/index",
     "style": {
-      "navigationBarTitleText": "我的"
+      "navigationBarTitleText": "确认订单"
     }
   }, {
-    "path": "pages/mine/avatar/index",
+    "path": "pages/order/list/index",
     "style": {
-      "navigationBarTitleText": "修改头像"
+      "navigationBarTitleText": "订单列表"
+    }
+  }, {
+    "path": "pages/order/detail/index",
+    "style": {
+      "navigationBarTitleText": "订单详情"
+    }
+  }, {
+    "path": "pages/order/afterSale/index",
+    "style": {
+      "navigationBarTitleText": "售后列表"
+    }
+  }, {
+    "path": "pages/order/afterSale/apply/index",
+    "style": {
+      "navigationBarTitleText": "申请售后"
+    }
+  }, {
+    "path": "pages/order/afterSale/detail/index",
+    "style": {
+      "navigationBarTitleText": "售后详情"
+    }
+  }, {
+    "path": "pages/address/list/index",
+    "style": {
+      "navigationBarTitleText": "收货地址"
+    }
+  }, {
+    "path": "pages/address/edit/index",
+    "style": {
+      "navigationBarTitleText": "编辑地址"
+    }
+  }, {
+    "path": "pages/mine/collect/index",
+    "style": {
+      "navigationBarTitleText": "我的收藏"
+    }
+  }, {
+    "path": "pages/mine/track/index",
+    "style": {
+      "navigationBarTitleText": "浏览记录"
+    }
+  }, {
+    "path": "pages/mine/coupon/index",
+    "style": {
+      "navigationBarTitleText": "我的优惠券"
     }
   }, {
     "path": "pages/mine/info/index",
@@ -48,55 +119,50 @@
   }, {
     "path": "pages/mine/setting/index",
     "style": {
-      "navigationBarTitleText": "应用设置"
-    }
-  }, {
-    "path": "pages/mine/help/index",
-    "style": {
-      "navigationBarTitleText": "常见问题"
-    }
-  }, {
-    "path": "pages/mine/about/index",
-    "style": {
-      "navigationBarTitleText": "关于我们"
+      "navigationBarTitleText": "设置"
     }
   }, {
     "path": "pages/common/webview/index",
     "style": {
       "navigationBarTitleText": "浏览网页"
     }
-  }, {
-    "path": "pages/common/textview/index",
-    "style": {
-      "navigationBarTitleText": "浏览文本"
-    }
   }],
   "tabBar": {
-    "color": "#000000",
-    "selectedColor": "#000000",
+    "color": "#999999",
+    "selectedColor": "#f2b974",
     "borderStyle": "white",
     "backgroundColor": "#ffffff",
     "list": [{
-        "pagePath": "pages/index",
-        "iconPath": "static/images/tabbar/home.png",
-        "selectedIconPath": "static/images/tabbar/home_.png",
-        "text": "首页"
-      }, {
-        "pagePath": "pages/work/index",
-        "iconPath": "static/images/tabbar/work.png",
-        "selectedIconPath": "static/images/tabbar/work_.png",
-        "text": "工作台"
-      }, {
-        "pagePath": "pages/mine/index",
-        "iconPath": "static/images/tabbar/mine.png",
-        "selectedIconPath": "static/images/tabbar/mine_.png",
-        "text": "我的"
-      }
-    ]
+      "pagePath": "pages/dechome/index",
+      "iconPath": "static/images/tabbar/home.png",
+      "selectedIconPath": "static/images/tabbar/home_.png",
+      "text": "首页"
+    }, {
+      "pagePath": "pages/classify/index",
+      "iconPath": "static/images/tabbar/classify.png",
+      "selectedIconPath": "static/images/tabbar/classify_.png",
+      "text": "分类"
+    }, {
+      "pagePath": "pages/cart/index",
+      "iconPath": "static/images/tabbar/cart.png",
+      "selectedIconPath": "static/images/tabbar/cart_.png",
+      "text": "购物车"
+    }, {
+      "pagePath": "pages/special/index",
+      "iconPath": "static/images/tabbar/special.png",
+      "selectedIconPath": "static/images/tabbar/special_.png",
+      "text": "专题"
+    }, {
+      "pagePath": "pages/mine/index",
+      "iconPath": "static/images/tabbar/mine.png",
+      "selectedIconPath": "static/images/tabbar/mine_.png",
+      "text": "我的"
+    }]
   },
   "globalStyle": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "RuoYi",
-    "navigationBarBackgroundColor": "#FFFFFF"
+    "navigationBarTitleText": "中青商城",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#F5F5F5"
   }
 }

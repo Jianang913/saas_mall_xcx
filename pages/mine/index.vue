@@ -1,188 +1,303 @@
 <template>
-  <view class="mine-container" :style="{height: `${windowHeight}px`}">
-    <!--顶部个人信息栏-->
-    <view class="header-section">
-      <view class="flex padding justify-between">
-        <view class="flex align-center">
-          <view v-if="!avatar" class="cu-avatar xl round bg-white">
-            <view class="iconfont icon-people text-gray icon"></view>
-          </view>
-          <image v-if="avatar" @click="handleToAvatar" :src="avatar" class="cu-avatar xl round" mode="widthFix">
-          </image>
-          <view v-if="!name" @click="handleToLogin" class="login-tip">
-            点击登录
-          </view>
-          <view v-if="name" @click="handleToInfo" class="user-info">
-            <view class="u_title">
-              用户名：{{ name }}
-            </view>
-          </view>
-        </view>
-        <view @click="handleToInfo" class="flex align-center">
-          <text>个人信息</text>
-          <view class="iconfont icon-right"></view>
+  <view class="mine-page">
+    <!-- 用户信息 -->
+    <view class="user-header">
+      <view class="user-info" @click="goProfile">
+        <image class="user-avatar" :src="avatar || '/static/images/default-avatar.png'" mode="aspectFill" />
+        <view class="user-detail">
+          <text class="user-name">{{ nickname || '未登录' }}</text>
+          <text class="user-id" v-if="nickname">ID: {{ userId }}</text>
         </view>
       </view>
     </view>
 
-    <view class="content-section">
-      <view class="mine-actions grid col-4 text-center">
-        <view class="action-item" @click="handleJiaoLiuQun">
-          <view class="iconfont icon-friendfill text-pink icon"></view>
-          <text class="text">交流群</text>
+    <!-- 订单入口 -->
+    <view class="order-section">
+      <view class="section-header" @click="goOrderList(0)">
+        <text class="section-title">我的订单</text>
+        <text class="section-more">全部订单 <text class="cuIcon-right"></text></text>
+      </view>
+      <view class="order-status-grid">
+        <view class="status-item" @click="goOrderList(1)">
+          <view class="status-icon-wrap">
+            <text class="cuIcon-pay"></text>
+            <text class="badge" v-if="orderNum.pendingPay > 0">{{ orderNum.pendingPay }}</text>
+          </view>
+          <text class="status-text">待付款</text>
         </view>
-        <view class="action-item" @click="handleBuilding">
-          <view class="iconfont icon-service text-blue icon"></view>
-          <text class="text">在线客服</text>
+        <view class="status-item" @click="goOrderList(2)">
+          <view class="status-icon-wrap">
+            <text class="cuIcon-deliver"></text>
+            <text class="badge" v-if="orderNum.pendingShip > 0">{{ orderNum.pendingShip }}</text>
+          </view>
+          <text class="status-text">待发货</text>
         </view>
-        <view class="action-item" @click="handleBuilding">
-          <view class="iconfont icon-community text-mauve icon"></view>
-          <text class="text">反馈社区</text>
+        <view class="status-item" @click="goOrderList(3)">
+          <view class="status-icon-wrap">
+            <text class="cuIcon-package"></text>
+            <text class="badge" v-if="orderNum.pendingReceive > 0">{{ orderNum.pendingReceive }}</text>
+          </view>
+          <text class="status-text">待收货</text>
         </view>
-        <view class="action-item" @click="handleBuilding">
-          <view class="iconfont icon-dianzan text-green icon"></view>
-          <text class="text">点赞我们</text>
+        <view class="status-item" @click="goOrderList(4)">
+          <view class="status-icon-wrap">
+            <text class="cuIcon-check"></text>
+          </view>
+          <text class="status-text">已完成</text>
+        </view>
+        <view class="status-item" @click="goAfterSale">
+          <view class="status-icon-wrap">
+            <text class="cuIcon-refund"></text>
+          </view>
+          <text class="status-text">售后</text>
         </view>
       </view>
+    </view>
 
-      <view class="menu-list">
-        <view class="list-cell list-cell-arrow" @click="handleToEditInfo">
-          <view class="menu-item-box">
-            <view class="iconfont icon-user menu-icon"></view>
-            <view>编辑资料</view>
-          </view>
-        </view>
-        <view class="list-cell list-cell-arrow" @click="handleHelp">
-          <view class="menu-item-box">
-            <view class="iconfont icon-help menu-icon"></view>
-            <view>常见问题</view>
-          </view>
-        </view>
-        <view class="list-cell list-cell-arrow" @click="handleAbout">
-          <view class="menu-item-box">
-            <view class="iconfont icon-aixin menu-icon"></view>
-            <view>关于我们</view>
-          </view>
-        </view>
-        <view class="list-cell list-cell-arrow" @click="handleToSetting">
-          <view class="menu-item-box">
-            <view class="iconfont icon-setting menu-icon"></view>
-            <view>应用设置</view>
-          </view>
-        </view>
+    <!-- 功能入口 -->
+    <view class="function-section">
+      <view class="function-item" @click="goPage('/pages/address/list/index')">
+        <text class="cuIcon-location function-icon"></text>
+        <text class="function-text">收货地址</text>
+        <text class="cuIcon-right"></text>
       </view>
+      <view class="function-item" @click="goPage('/pages/mine/coupon/index')">
+        <text class="cuIcon-ticket function-icon"></text>
+        <text class="function-text">优惠券</text>
+        <text class="cuIcon-right"></text>
+      </view>
+      <view class="function-item" @click="goPage('/pages/mine/collect/index')">
+        <text class="cuIcon-like function-icon"></text>
+        <text class="function-text">我的收藏</text>
+        <text class="cuIcon-right"></text>
+      </view>
+      <view class="function-item" @click="goPage('/pages/mine/track/index')">
+        <text class="cuIcon-time function-icon"></text>
+        <text class="function-text">浏览记录</text>
+        <text class="cuIcon-right"></text>
+      </view>
+    </view>
 
+    <!-- 其他 -->
+    <view class="function-section">
+      <view class="function-item" @click="goPage('/pages/mine/setting/index')">
+        <text class="cuIcon-settings function-icon"></text>
+        <text class="function-text">设置</text>
+        <text class="cuIcon-right"></text>
+      </view>
     </view>
   </view>
 </template>
 
 <script>
-  export default {
-    data() {
-      return {
-        name: this.$store.state.user.name
-      }
-    },
-    computed: {
-      avatar() {
-        return this.$store.state.user.avatar
-      },
-      windowHeight() {
-        return uni.getSystemInfoSync().windowHeight - 50
-      }
-    },
-    methods: {
-      handleToInfo() {
-        this.$tab.navigateTo('/pages/mine/info/index')
-      },
-      handleToEditInfo() {
-        this.$tab.navigateTo('/pages/mine/info/edit')
-      },
-      handleToSetting() {
-        this.$tab.navigateTo('/pages/mine/setting/index')
-      },
-      handleToLogin() {
-        this.$tab.reLaunch('/pages/login')
-      },
-      handleToAvatar() {
-        this.$tab.navigateTo('/pages/mine/avatar/index')
-      },
-      handleHelp() {
-        this.$tab.navigateTo('/pages/mine/help/index')
-      },
-      handleAbout() {
-        this.$tab.navigateTo('/pages/mine/about/index')
-      },
-      handleJiaoLiuQun() {
-        this.$modal.showToast('QQ群：①133713780(满)、②146013835(满)、③189091635')
-      },
-      handleBuilding() {
-        this.$modal.showToast('模块建设中~')
+import { getOrderNum } from '@/api/mall/order'
+
+export default {
+  data() {
+    return {
+      orderNum: {
+        pendingPay: 0,
+        pendingShip: 0,
+        pendingReceive: 0
       }
     }
+  },
+  computed: {
+    nickname() {
+      return this.$store.getters.name
+    },
+    avatar() {
+      return this.$store.getters.avatar
+    },
+    userId() {
+      return this.$store.getters.id
+    }
+  },
+  onShow() {
+    if (this.$store.getters.token) {
+      this.loadOrderNum()
+    }
+  },
+  methods: {
+    async loadOrderNum() {
+      try {
+        const res = await getOrderNum()
+        if (res.data) {
+          this.orderNum = res.data
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    },
+    goProfile() {
+      if (!this.nickname) {
+        this.$tab.navigateTo('/pages/login')
+        return
+      }
+      this.$tab.navigateTo('/pages/mine/info/index')
+    },
+    goOrderList(status) {
+      if (!this.nickname) {
+        this.$tab.navigateTo('/pages/login')
+        return
+      }
+      this.$tab.navigateTo('/pages/order/list/index?status=' + status)
+    },
+    goAfterSale() {
+      if (!this.nickname) {
+        this.$tab.navigateTo('/pages/login')
+        return
+      }
+      this.$tab.navigateTo('/pages/order/afterSale/index')
+    },
+    goPage(url) {
+      if (!this.nickname) {
+        this.$tab.navigateTo('/pages/login')
+        return
+      }
+      this.$tab.navigateTo(url)
+    }
   }
+}
 </script>
 
 <style lang="scss" scoped>
-  page {
-    background-color: #f5f6f7;
-  }
+.mine-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
 
-  .mine-container {
-    width: 100%;
-    height: 100%;
+.user-header {
+  background: linear-gradient(135deg, #f2b974, #e4a04e);
+  padding: 60rpx 24rpx 40rpx;
+  padding-top: calc(60rpx + var(--status-bar-height));
+}
 
+.user-info {
+  display: flex;
+  align-items: center;
+}
 
-    .header-section {
-      padding: 15px 15px 45px 15px;
-      background-color: #3c96f3;
-      color: white;
+.user-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(255, 255, 255, 0.5);
+}
 
-      .login-tip {
-        font-size: 18px;
-        margin-left: 10px;
-      }
+.user-detail {
+  margin-left: 24rpx;
+}
 
-      .cu-avatar {
-        border: 2px solid #eaeaea;
+.user-name {
+  font-size: 36rpx;
+  color: #fff;
+  font-weight: bold;
+  display: block;
+}
 
-        .icon {
-          font-size: 40px;
-        }
-      }
+.user-id {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 8rpx;
+  display: block;
+}
 
-      .user-info {
-        margin-left: 15px;
+.order-section {
+  background-color: #fff;
+  margin: 20rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
 
-        .u_title {
-          font-size: 18px;
-          line-height: 30px;
-        }
-      }
-    }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
 
-    .content-section {
-      position: relative;
-      top: -50px;
+.section-title {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: bold;
+}
 
-      .mine-actions {
-        margin: 15px 15px;
-        padding: 20px 0px;
-        border-radius: 8px;
-        background-color: white;
+.section-more {
+  font-size: 26rpx;
+  color: #999;
+}
 
-        .action-item {
-          .icon {
-            font-size: 28px;
-          }
+.order-status-grid {
+  display: flex;
+  padding: 24rpx 0;
+}
 
-          .text {
-            display: block;
-            font-size: 13px;
-            margin: 8px 0px;
-          }
-        }
-      }
-    }
-  }
+.status-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status-icon-wrap {
+  position: relative;
+  font-size: 44rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.badge {
+  position: absolute;
+  top: -10rpx;
+  right: -16rpx;
+  font-size: 20rpx;
+  color: #fff;
+  background-color: #e4393c;
+  padding: 2rpx 8rpx;
+  border-radius: 16rpx;
+  min-width: 28rpx;
+  text-align: center;
+}
+
+.status-text {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.function-section {
+  background-color: #fff;
+  margin: 0 20rpx 20rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.function-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.function-item:last-child {
+  border-bottom: none;
+}
+
+.function-icon {
+  font-size: 36rpx;
+  color: #f2b974;
+  margin-right: 16rpx;
+}
+
+.function-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.function-item .cuIcon-right {
+  font-size: 28rpx;
+  color: #ccc;
+}
 </style>
