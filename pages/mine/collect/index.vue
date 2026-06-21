@@ -8,9 +8,8 @@
           <text class="goods-price">¥{{ item.shopPrice }}</text>
         </view>
       </view>
-      <view class="loading-tip" v-if="loading"><text>加载中...</text></view>
-      <view class="loading-tip" v-else-if="noMore && collectList.length"><text>没有更多了</text></view>
-      <view class="empty" v-if="!collectList.length && !loading"><text>暂无收藏</text></view>
+      <uni-load-more v-if="collectList.length || loading" :status="loading ? 'loading' : noMore ? 'noMore' : 'more'" />
+      <uni-load-more v-if="!collectList.length && !loading" status="noData" />
     </scroll-view>
   </view>
 </template>
@@ -50,6 +49,4 @@ export default {
 .goods-info { flex: 1; padding: 20rpx; display: flex; flex-direction: column; justify-content: space-between; }
 .goods-name { font-size: 28rpx; color: #333; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .goods-price { font-size: 34rpx; color: #e4393c; font-weight: bold; }
-.loading-tip { text-align: center; padding: 30rpx 0; font-size: 26rpx; color: #999; }
-.empty { text-align: center; padding: 200rpx 0; font-size: 28rpx; color: #999; }
 </style>

@@ -41,25 +41,24 @@
         </view>
       </view>
 
-      <view class="loading-tip" v-if="loading"><text>加载中...</text></view>
-      <view class="loading-tip" v-else-if="noMore && goodsList.length"><text>没有更多了</text></view>
-      <view class="empty" v-if="!goodsList.length && !loading"><text>暂无商品</text></view>
+      <uni-load-more v-if="goodsList.length || loading" :status="loading ? 'loading' : noMore ? 'noMore' : 'more'" />
+      <uni-load-more v-if="!goodsList.length && !loading" status="noData" />
     </scroll-view>
 
     <!-- 自定义 Tab 栏 -->
     <tab-bar />
 
     <!-- 登录提示弹窗 -->
-    <view class="login-overlay" v-if="showLoginTip" @click="showLoginTip = false">
-      <view class="login-dialog" @click.stop>
-        <view class="login-close" @click="showLoginTip = false">✕</view>
+    <uni-popup ref="loginPopup" type="center" :is-mask-click="true" @change="onLoginPopupChange">
+      <view class="login-dialog">
+        <view class="login-close" @click="closeLoginPopup">✕</view>
         <view class="login-icon">🎉</view>
         <view class="login-title">登录享更多优惠</view>
         <view class="login-desc">登录后可领取优惠券、查看专属价格、积分抵扣等</view>
         <view class="login-btn" @click="goLogin">立即登录</view>
-        <view class="login-skip" @click="showLoginTip = false">先逛逛</view>
+        <view class="login-skip" @click="closeLoginPopup">先逛逛</view>
       </view>
-    </view>
+    </uni-popup>
   </view>
 </template>
 
@@ -77,8 +76,7 @@ export default {
       page: 1,
       pageSize: 20,
       loading: false,
-      noMore: false,
-      showLoginTip: false
+      noMore: false
     }
   },
   async onShow() {
@@ -108,7 +106,9 @@ export default {
 
       // 未登录时显示登录提示
       if (!getToken()) {
-        this.showLoginTip = true
+        this.$nextTick(() => {
+          this.$refs.loginPopup.open()
+        })
       }
 
       // 等待导航数据就绪
@@ -185,8 +185,16 @@ export default {
     },
 
     goLogin() {
-      this.showLoginTip = false
+      this.$refs.loginPopup.close()
       this.$tab.navigateTo('/pages/login')
+    },
+
+    closeLoginPopup() {
+      this.$refs.loginPopup.close()
+    },
+
+    onLoginPopupChange(e) {
+      // 弹窗状态变化时可做额外处理
     }
   }
 }
@@ -208,19 +216,7 @@ export default {
 .price-row { display: flex; align-items: baseline; margin-top: 12rpx; }
 .goods-price { font-size: 34rpx; color: #e4393c; font-weight: bold; }
 .market-price { font-size: 24rpx; color: #999; text-decoration: line-through; margin-left: 12rpx; }
-.loading-tip { text-align: center; padding: 30rpx 0; font-size: 26rpx; color: #999; }
-.empty { text-align: center; padding: 200rpx 0; font-size: 28rpx; color: #999; }
-
 /* 登录提示弹窗 */
-.login-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
 .login-dialog {
   width: 580rpx;
   background: #fff;

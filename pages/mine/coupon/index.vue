@@ -16,9 +16,8 @@
           </view>
         </view>
       </view>
-      <view class="loading-tip" v-if="loading"><text>加载中...</text></view>
-      <view class="loading-tip" v-else-if="noMore && couponList.length"><text>没有更多了</text></view>
-      <view class="empty" v-if="!couponList.length && !loading"><text>暂无优惠券</text></view>
+      <uni-load-more v-if="couponList.length || loading" :status="loading ? 'loading' : noMore ? 'noMore' : 'more'" />
+      <uni-load-more v-if="!couponList.length && !loading" status="noData" />
     </scroll-view>
   </view>
 </template>
@@ -63,6 +62,4 @@ export default {
 .status-unused { font-size: 24rpx; color: #f2b974; }
 .status-used { font-size: 24rpx; color: #999; }
 .status-expired { font-size: 24rpx; color: #ccc; }
-.loading-tip { text-align: center; padding: 30rpx 0; font-size: 26rpx; color: #999; }
-.empty { text-align: center; padding: 200rpx 0; font-size: 28rpx; color: #999; }
 </style>

@@ -46,9 +46,7 @@
         </view>
 
         <!-- 空状态 -->
-        <view class="empty" v-if="!subCatList.length && categoryList.length">
-          <text>暂无子分类</text>
-        </view>
+        <uni-load-more v-if="!subCatList.length && categoryList.length" status="noData" />
       </scroll-view>
     </view>
 
@@ -232,12 +230,5 @@ export default {
 .sub-cat-name {
   font-size: 24rpx;
   color: #333;
-}
-
-.empty {
-  text-align: center;
-  padding: 100rpx 0;
-  color: #999;
-  font-size: 26rpx;
 }
 </style>

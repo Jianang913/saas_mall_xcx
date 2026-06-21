@@ -9,9 +9,8 @@
           <text class="track-time">{{ item.createTime }}</text>
         </view>
       </view>
-      <view class="loading-tip" v-if="loading"><text>加载中...</text></view>
-      <view class="loading-tip" v-else-if="noMore && trackList.length"><text>没有更多了</text></view>
-      <view class="empty" v-if="!trackList.length && !loading"><text>暂无浏览记录</text></view>
+      <uni-load-more v-if="trackList.length || loading" :status="loading ? 'loading' : noMore ? 'noMore' : 'more'" />
+      <uni-load-more v-if="!trackList.length && !loading" status="noData" />
     </scroll-view>
   </view>
 </template>
@@ -52,6 +51,4 @@ export default {
 .goods-name { font-size: 28rpx; color: #333; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .goods-price { font-size: 34rpx; color: #e4393c; font-weight: bold; }
 .track-time { font-size: 24rpx; color: #999; }
-.loading-tip { text-align: center; padding: 30rpx 0; font-size: 26rpx; color: #999; }
-.empty { text-align: center; padding: 200rpx 0; font-size: 28rpx; color: #999; }
 </style>

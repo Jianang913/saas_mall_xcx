@@ -63,17 +63,8 @@
       </view>
 
       <!-- 加载状态 -->
-      <view class="loading-tip" v-if="loading">
-        <text>加载中...</text>
-      </view>
-      <view class="loading-tip" v-else-if="noMore && orderList.length">
-        <text>没有更多了</text>
-      </view>
-
-      <!-- 空状态 -->
-      <view class="empty" v-if="!orderList.length && !loading">
-        <text>暂无订单</text>
-      </view>
+      <uni-load-more v-if="orderList.length || loading" :status="loading ? 'loading' : noMore ? 'noMore' : 'more'" />
+      <uni-load-more v-if="!orderList.length && !loading" status="noData" />
     </scroll-view>
   </view>
 </template>
@@ -376,17 +367,4 @@ export default {
   color: #f2b974;
 }
 
-.loading-tip {
-  text-align: center;
-  padding: 30rpx 0;
-  font-size: 26rpx;
-  color: #999;
-}
-
-.empty {
-  text-align: center;
-  padding: 200rpx 0;
-  font-size: 28rpx;
-  color: #999;
-}
 </style>

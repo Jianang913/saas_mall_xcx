@@ -31,9 +31,8 @@
         </view>
       </view>
 
-      <view class="loading-tip" v-if="loading"><text>加载中...</text></view>
-      <view class="loading-tip" v-else-if="noMore && saleList.length"><text>没有更多了</text></view>
-      <view class="empty" v-if="!saleList.length && !loading"><text>暂无售后订单</text></view>
+      <uni-load-more v-if="saleList.length || loading" :status="loading ? 'loading' : noMore ? 'noMore' : 'more'" />
+      <uni-load-more v-if="!saleList.length && !loading" status="noData" />
     </scroll-view>
   </view>
 </template>
@@ -118,6 +117,4 @@ export default {
 .sale-amount { font-size: 26rpx; color: #666; }
 .highlight { color: #e4393c; font-weight: bold; }
 .action-btn { padding: 12rpx 24rpx; border: 1rpx solid #ddd; border-radius: 30rpx; font-size: 26rpx; color: #666; }
-.loading-tip { text-align: center; padding: 30rpx 0; font-size: 26rpx; color: #999; }
-.empty { text-align: center; padding: 200rpx 0; font-size: 28rpx; color: #999; }
 </style>

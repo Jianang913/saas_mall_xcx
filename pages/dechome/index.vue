@@ -31,9 +31,7 @@
         <notice-module v-if="module.moduleId == 11" :data="module" />
       </block>
 
-      <view class="empty" v-if="!loading && !moduleList.length">
-        <text>暂无数据</text>
-      </view>
+      <uni-load-more v-if="!loading && !moduleList.length" status="noData" />
       <view class="bottom-tip" v-if="moduleList.length">
         <text>— 已经到底了 —</text>
       </view>
@@ -132,6 +130,5 @@ export default {
 .nav-search { flex: 1; display: flex; align-items: center; height: 60rpx; background-color: #f5f5f5; border-radius: 30rpx; padding: 0 24rpx; }
 .search-placeholder { margin-left: 12rpx; font-size: 26rpx; color: #999; }
 .page-scroll { height: calc(100vh - 44px - var(--status-bar-height) - 100rpx); }
-.empty { text-align: center; padding: 200rpx 0; font-size: 28rpx; color: #999; }
 .bottom-tip { text-align: center; padding: 30rpx 0 130rpx; font-size: 24rpx; color: #999; }
 </style>

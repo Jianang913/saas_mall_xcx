@@ -20,9 +20,7 @@
         </view>
       </view>
 
-      <view class="empty" v-if="!addressList.length">
-        <text>暂无收货地址</text>
-      </view>
+      <uni-load-more v-if="!addressList.length" status="noData" />
     </scroll-view>
 
     <!-- 新增按钮 -->
@@ -87,6 +85,5 @@ export default {
 .default-tag { font-size: 22rpx; color: #f2b974; border: 1rpx solid #f2b974; padding: 2rpx 12rpx; border-radius: 4rpx; margin-left: 12rpx; }
 .address-detail { font-size: 26rpx; color: #999; line-height: 1.4; }
 .address-actions { font-size: 36rpx; color: #999; padding-left: 20rpx; }
-.empty { text-align: center; padding: 200rpx 0; font-size: 28rpx; color: #999; }
 .add-btn { position: fixed; bottom: 0; left: 0; right: 0; height: 100rpx; background-color: #f2b974; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 32rpx; }
 </style>
