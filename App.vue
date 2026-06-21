@@ -68,8 +68,8 @@ export default {
 
           this.globalData.tabBar.list = tabs
 
-          // 找首页的装修页ID
-          const homeTab = tabs.find(t => t.navigationName === '首页')
+          // 找第一个装修页(linkType=2)的 linkUrlId 作为首页
+          const homeTab = tabs.find(t => String(t.linkType) === '2')
           if (homeTab && homeTab.linkUrlId) {
             this.globalData.specialId = homeTab.linkUrlId
           }
@@ -178,7 +178,7 @@ export default {
     navigationReady: false,
     loginReady: false,
     tabBar: { list: [] },
-    shopImg: '',
+    shopImg: 'http://localhost:8080',
     appId: '',
     openId: '',
     userId: ''

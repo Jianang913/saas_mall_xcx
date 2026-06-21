@@ -44,7 +44,7 @@ export default {
       if (!pic) return ''
       if (pic.startsWith('http')) return pic
       const app = getApp()
-      return (app.globalData.shopImg || '') + pic
+      return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
     },
     formatPrice(price) {
       if (!price) return '0.00'

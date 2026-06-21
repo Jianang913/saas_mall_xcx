@@ -11,7 +11,7 @@
       indicator-active-color="#ffffff"
     >
       <swiper-item v-for="(item, index) in imageList" :key="index" @click="onClick(item)">
-        <image class="swiper-image" :src="formatImage(item.pic)" mode="aspectFill" />
+        <image class="swiper-image" :src="formatImage(item.picture)" mode="aspectFill" />
       </swiper-item>
     </swiper>
   </view>
@@ -38,7 +38,7 @@ export default {
       if (!pic) return ''
       if (pic.startsWith('http')) return pic
       const app = getApp()
-      return (app.globalData.shopImg || '') + pic
+      return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
     },
     onClick(item) {
       if (item.content) {

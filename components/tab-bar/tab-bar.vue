@@ -10,7 +10,7 @@
       >
         <image
           class="tab-icon"
-          :src="item.selected ? item.iconOne : item.iconTwo"
+          :src="item.selected ? item.iconOneUrl : item.iconTwoUrl"
           mode="aspectFit"
         />
         <text class="tab-text" :class="{ active: item.selected }">
