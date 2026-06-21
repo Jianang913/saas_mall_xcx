@@ -1,6 +1,7 @@
 <script>
 import config from './config'
 import { getToken } from '@/utils/auth'
+import { silentLogin } from '@/api/mall/login'
 import { getNavigation } from '@/api/mall/home'
 
 export default {
@@ -8,21 +9,21 @@ export default {
     this.initApp(options)
   },
   onShow(options) {
-    // 记录场景值
     if (options.scene) {
       uni.setStorageSync('scene', options.scene)
     }
   },
   methods: {
     async initApp(options) {
-      // 初始化配置
       this.globalData.config = config
-      // 获取系统信息
       this.initSystemInfo()
-      // 记录分享参数
       this.initShareParams(options)
-      // 获取导航配置
-      await this.loadNavigation()
+
+      // 获取导航配置（不依赖登录）
+      this.loadNavigation()
+
+      // 自动静默登录（不阻塞页面加载）
+      this.silentLoginAsync()
     },
 
     // 获取系统信息
@@ -40,46 +41,39 @@ export default {
       } catch (e) {
         this.globalData.navBarHeight = sysInfo.statusBarHeight + 44
       }
+
+      // 读取小程序 appId
+      const accountInfo = uni.getAccountInfoSync()
+      this.globalData.appId = accountInfo.miniProgram.appId
       // #endif
     },
 
     // 记录分享参数
     initShareParams(options) {
-      if (options.query) {
+      if (options && options.query) {
         const { userId, shopId } = options.query
         if (userId) uni.setStorageSync('userId', userId)
         if (shopId) uni.setStorageSync('shopId', shopId)
       }
     },
 
-    // 获取导航配置（Tab 栏）
+    // 获取导航配置
     async loadNavigation() {
       try {
         const res = await getNavigation({ pageSize: 10 })
-        if (res.rows && res.rows.length) {
-          const tabs = res.rows
-            .filter(item => item.navigationStatusFlag === '0') // 过滤启用的
+        if (res.code === 200 && res.data) {
+          const tabs = res.data
+            .filter(item => item.navigationStatusFlag === '0')
             .sort((a, b) => (a.sort || 0) - (b.sort || 0))
-            .map(item => ({
-              navigationId: item.navigationId,
-              navigationName: item.navigationName,
-              iconOne: item.iconOne,   // 选中图标
-              iconTwo: item.iconTwo,   // 未选中图标
-              linkType: item.linkType || 0,  // 0=系统页面, 1=专题页
-              linkUrlId: item.linkUrlId,     // 专题页ID
-              contentName: item.contentName, // 页面路径标识
-              selected: false
-            }))
 
           this.globalData.tabBar.list = tabs
 
-          // 找到首页对应的专题页ID
+          // 找首页的装修页ID
           const homeTab = tabs.find(t => t.navigationName === '首页')
           if (homeTab && homeTab.linkUrlId) {
             this.globalData.specialId = homeTab.linkUrlId
           }
 
-          // 通知等待导航数据的页面
           this.globalData.navigationReady = true
           if (this._navigationCallbacks) {
             this._navigationCallbacks.forEach(cb => cb(tabs))
@@ -89,6 +83,48 @@ export default {
       } catch (e) {
         console.error('加载导航配置失败', e)
       }
+    },
+
+    // 静默登录（异步，不阻塞页面）
+    async silentLoginAsync() {
+      // #ifdef MP-WEIXIN
+      // 已有 token 则跳过
+      if (getToken()) {
+        this.globalData.loginReady = true
+        return
+      }
+
+      try {
+        const loginCode = await new Promise((resolve, reject) => {
+          uni.login({
+            provider: 'weixin',
+            success: res => resolve(res.code),
+            fail: reject
+          })
+        })
+
+        const res = await silentLogin({
+          code: loginCode,
+          appId: this.globalData.appId
+        })
+
+        if (res.code === 200 && res.data) {
+          const { token, openId, userId, tenantId } = res.data
+          uni.setStorageSync('App-Token', token)
+          if (openId) uni.setStorageSync('xcxOpenId', openId)
+          if (userId) uni.setStorageSync('userId', userId)
+          if (tenantId) uni.setStorageSync('tenantId', tenantId)
+          this.globalData.loginReady = true
+          console.log('静默登录成功')
+        }
+      } catch (e) {
+        console.warn('静默登录失败（不影响浏览）', e)
+      }
+      // #endif
+
+      // #ifndef MP-WEIXIN
+      this.globalData.loginReady = true
+      // #endif
     },
 
     // 等待导航数据就绪
@@ -103,36 +139,24 @@ export default {
       })
     },
 
-    // 等待登录就绪（轮询 token）
+    // 等待登录就绪
     waitForLogin() {
-      return new Promise((resolve, reject) => {
-        let count = 0
-        const timer = setInterval(() => {
-          count++
-          if (getToken()) {
-            clearInterval(timer)
-            resolve(true)
-          }
-          if (count > 25) { // 5秒超时
-            clearInterval(timer)
-            resolve(false)
-          }
-        }, 200)
-      })
-    },
-
-    // 设置当前选中的Tab
-    setSelectedTab(pagePath) {
-      const list = this.globalData.tabBar.list
-      if (!list) return
-      list.forEach(tab => {
-        tab.selected = false
-        if (tab.linkType === 0) {
-          // 普通页面：路径匹配即选中
-          tab.selected = tab.contentName === pagePath || tab.pagePath === pagePath
-        } else if (tab.linkType === 1 || tab.linkType === 2) {
-          // 专题页：路径匹配 + specialId 匹配
-          tab.selected = (tab.contentName === pagePath) && (this.globalData.specialId == tab.linkUrlId)
+      return new Promise((resolve) => {
+        if (this.globalData.loginReady) {
+          resolve(true)
+        } else {
+          let count = 0
+          const timer = setInterval(() => {
+            count++
+            if (this.globalData.loginReady || getToken()) {
+              clearInterval(timer)
+              resolve(true)
+            }
+            if (count > 50) { // 5秒超时
+              clearInterval(timer)
+              resolve(false)
+            }
+          }, 100)
         }
       })
     },
@@ -150,12 +174,12 @@ export default {
     navBarHeight: 0,
     menuButtonInfo: null,
     safeAreaBottom: 0,
-    specialId: null,        // 当前专题页/装修页ID
+    specialId: null,
     navigationReady: false,
-    tabBar: {
-      list: []              // 动态Tab配置
-    },
-    shopImg: '',            // 图片前缀
+    loginReady: false,
+    tabBar: { list: [] },
+    shopImg: '',
+    appId: '',
     openId: '',
     userId: ''
   }

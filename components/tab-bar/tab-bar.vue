@@ -31,7 +31,6 @@ export default {
   },
   created() {
     this.initTabBar()
-    // 监听 globalData 变化
     this._timer = setInterval(() => {
       const app = getApp()
       if (app && app.globalData.tabBar.list.length) {
@@ -46,8 +45,6 @@ export default {
     async initTabBar() {
       const app = getApp()
       if (!app) return
-
-      // 等待导航数据就绪
       const tabs = await app.waitForNavigation()
       this.tabList = tabs.map(tab => ({ ...tab }))
       this.updateSelected()
@@ -56,22 +53,21 @@ export default {
     updateSelected() {
       const app = getApp()
       if (!app) return
-
       const pages = getCurrentPages()
       const currentPage = pages[pages.length - 1]
       if (!currentPage) return
-
       const currentRoute = '/' + currentPage.route
       const specialId = app.globalData.specialId
 
       this.tabList.forEach(tab => {
         tab.selected = false
+        const tabPath = tab.pagePath || ''
         if (tab.linkType === 0) {
-          // 普通页面：contentName 匹配
-          tab.selected = tab.contentName === currentRoute
+          // 系统页面：pagePath 匹配
+          tab.selected = tabPath === currentRoute
         } else if (tab.linkType === 1 || tab.linkType === 2) {
-          // 专题页：路径匹配 + specialId 匹配
-          tab.selected = (tab.contentName === currentRoute) && (specialId == tab.linkUrlId)
+          // 专题页/装修页：路径匹配 + specialId 匹配
+          tab.selected = (tabPath === currentRoute) && (specialId == tab.linkUrlId)
         }
       })
     },
@@ -82,11 +78,11 @@ export default {
       const currentPage = pages[pages.length - 1]
       const currentRoute = '/' + currentPage.route
 
-      // 专题页 Tab
+      // 专题页/装修页 Tab
       if (item.linkType === 1 || item.linkType === 2) {
         app.switchSpecialPage(item.linkUrlId)
-        // 如果已经在专题页，触发刷新事件
-        if (currentRoute === item.contentName || currentRoute === '/pages/special/index') {
+        const tabPath = item.pagePath || ''
+        if (currentRoute === tabPath) {
           uni.$emit('specialPageRefresh', item.linkUrlId)
           this.updateSelected()
           return
@@ -94,23 +90,12 @@ export default {
       }
 
       // 跳转
-      const targetPath = item.contentName || this.getDefaultPath(item.navigationName)
+      const targetPath = item.pagePath || '/pages/dechome/index'
       if (this.isTabPage(targetPath)) {
         uni.switchTab({ url: targetPath })
       } else {
         uni.navigateTo({ url: targetPath })
       }
-    },
-
-    getDefaultPath(name) {
-      const map = {
-        '首页': '/pages/dechome/index',
-        '分类': '/pages/classify/index',
-        '购物车': '/pages/cart/index',
-        '专题': '/pages/special/index',
-        '我的': '/pages/mine/index'
-      }
-      return map[name] || '/pages/dechome/index'
     },
 
     isTabPage(path) {

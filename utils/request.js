@@ -12,7 +12,7 @@ const request = config => {
   const isToken = (config.headers || {}).isToken === false
   config.header = config.header || {}
 
-  // 商城自定义 Headers（对齐旧项目）
+  // 商城自定义 Headers
   const app = getApp()
   const globalData = app ? app.globalData : {}
 
@@ -54,6 +54,12 @@ const request = config => {
       const msg = errorCode[code] || res.data.msg || errorCode['default']
 
       if (code === 401) {
+        // 未登录时的 401 静默处理（静默登录期间不弹框）
+        if (!getToken()) {
+          reject('未登录')
+          return
+        }
+        // 已登录但 token 过期，弹提示
         showConfirm('登录状态已过期，您可以继续留在该页面，或者重新登录?').then(res => {
           if (res.confirm) {
             store.dispatch('LogOut').then(res => {

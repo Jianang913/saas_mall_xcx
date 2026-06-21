@@ -67,11 +67,14 @@
 
     <!-- 自定义 Tab 栏 -->
     <tab-bar />
+    <!-- 登录弹窗 -->
+    <login-modal ref="loginModal" />
   </view>
 </template>
 
 <script>
 import { listCart, updateCart, delCart } from '@/api/mall/cart'
+import { getToken } from '@/utils/auth'
 
 export default {
   data() {
@@ -163,7 +166,12 @@ export default {
           console.error('删除失败', e)
         }
       } else {
-        // 结算
+        // 结算 — 检查登录
+        if (!getToken()) {
+          const loggedIn = await this.$refs.loginModal.show()
+          if (!loggedIn) return
+        }
+
         const carts = this.checkedList.map(item => ({
           cartId: item.cartId,
           goodsId: item.goodsId,

@@ -11,9 +11,11 @@ Vue.config.productionTip = false
 Vue.prototype.$store = store
 Vue.prototype.getDicts = getDicts
 
-// 全局注册 tab-bar 组件
+// 全局注册组件
 import tabBar from '@/components/tab-bar/tab-bar.vue'
+import loginModal from '@/components/login-modal/login-modal.vue'
 Vue.component('tab-bar', tabBar)
+Vue.component('login-modal', loginModal)
 
 App.mpType = 'app'
 
@@ -23,7 +25,7 @@ const app = new Vue({
 
 app.$mount()
 
-// 隐藏原生 Tab 栏（使用自定义 Tab 栏）
+// 隐藏原生 Tab 栏
 // #ifdef MP-WEIXIN
 uni.hideTabBar({ animation: false })
 // #endif

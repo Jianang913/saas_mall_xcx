@@ -116,12 +116,16 @@
         </view>
       </view>
     </view>
+
+    <!-- 登录弹窗 -->
+    <login-modal ref="loginModal" />
   </view>
 </template>
 
 <script>
 import { getGoods, listGoodsSpe, collectGoods, cancelCollect } from '@/api/mall/goods'
 import { addCart } from '@/api/mall/cart'
+import { getToken } from '@/utils/auth'
 
 export default {
   data() {
@@ -242,6 +246,12 @@ export default {
       })
     },
     async addToCart() {
+      // 检查登录
+      if (!getToken()) {
+        const loggedIn = await this.$refs.loginModal.show()
+        if (!loggedIn) return
+      }
+
       const sku = this.findMatchSku()
       if (!sku && this.specGroups.length) {
         this.$modal.msgError('请选择规格')
@@ -259,7 +269,13 @@ export default {
         console.error('加入购物车失败', e)
       }
     },
-    buyNow() {
+    async buyNow() {
+      // 检查登录
+      if (!getToken()) {
+        const loggedIn = await this.$refs.loginModal.show()
+        if (!loggedIn) return
+      }
+
       const sku = this.findMatchSku()
       if (!sku && this.specGroups.length) {
         this.$modal.msgError('请选择规格')
@@ -279,6 +295,12 @@ export default {
       this.$tab.navigateTo('/pages/order/confirm/index?type=detail')
     },
     async toggleCollect() {
+      // 检查登录
+      if (!getToken()) {
+        const loggedIn = await this.$refs.loginModal.show()
+        if (!loggedIn) return
+      }
+
       try {
         if (this.isCollected) {
           await cancelCollect({ goodsId: this.goodsId })

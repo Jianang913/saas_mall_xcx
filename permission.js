@@ -2,35 +2,63 @@ import { getToken } from '@/utils/auth'
 
 // 登录页面
 const loginPage = "/pages/login"
-  
-// 页面白名单
-const whiteList = [
-  '/pages/login', '/pages/register', '/pages/common/webview/index'
+
+// 需要登录才能访问的页面（白名单之外的都不拦截，让用户先逛）
+const authPages = [
+  '/pages/order/list/index',       // 订单列表
+  '/pages/order/detail/index',     // 订单详情
+  '/pages/order/afterSale/index',  // 售后列表
+  '/pages/order/afterSale/apply/index',
+  '/pages/order/afterSale/detail/index',
+  '/pages/address/list/index',     // 收货地址
+  '/pages/address/edit/index',
+  '/pages/mine/index',             // 我的
+  '/pages/mine/collect/index',     // 收藏
+  '/pages/mine/track/index',       // 浏览记录
+  '/pages/mine/coupon/index',      // 优惠券
+  '/pages/mine/info/index',
+  '/pages/mine/info/edit',
+  '/pages/mine/pwd/index',
+  '/pages/mine/setting/index',
 ]
 
-// 检查地址白名单
-function checkWhite(url) {
+// 检查是否需要登录
+function needAuth(url) {
   const path = url.split('?')[0]
-  return whiteList.indexOf(path) !== -1
+  return authPages.some(p => path.startsWith(p))
 }
 
-// 页面跳转验证拦截器
-let list = ["navigateTo", "redirectTo", "reLaunch", "switchTab"]
+// 页面跳转拦截器
+const list = ["navigateTo", "redirectTo", "reLaunch", "switchTab"]
 list.forEach(item => {
   uni.addInterceptor(item, {
     invoke(to) {
-      if (getToken()) {
-        if (to.url === loginPage) {
-          uni.reLaunch({ url: "/" })
+      const token = getToken()
+
+      // 已登录，正常跳转
+      if (token) {
+        // 如果要去登录页，跳转首页
+        if (to.url.indexOf(loginPage) !== -1) {
+          uni.reLaunch({ url: '/pages/dechome/index' })
+          return false
         }
         return true
-      } else {
-        if (checkWhite(to.url)) {
-          return true
-        }
-        uni.reLaunch({ url: loginPage })
+      }
+
+      // 未登录
+      // 登录页本身不拦截
+      if (to.url.indexOf(loginPage) !== -1) {
+        return true
+      }
+
+      // 需要登录的页面 → 跳转登录页
+      if (needAuth(to.url)) {
+        uni.navigateTo({ url: loginPage })
         return false
       }
+
+      // 不需要登录的页面 → 放行（让用户先逛）
+      return true
     },
     fail(err) {
       console.log(err)
