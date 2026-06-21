@@ -13,9 +13,9 @@
       <scroll-view scroll-x class="tabs-scroll">
         <view
           class="tab-item"
-          :class="{ active: currentClassifyId === item.classifyId }"
+          :class="{ active: currentClassifyId === item.specialGoodsClassifyId }"
           v-for="item in classifyList"
-          :key="item.classifyId"
+          :key="item.specialGoodsClassifyId"
           @click="switchClassify(item)"
         >
           <text>{{ item.classifyName }}</text>
@@ -31,7 +31,7 @@
         :key="item.goodsId"
         @click="goDetail(item)"
       >
-        <image class="goods-image" :src="formatImage(item.goodsImage)" mode="aspectFill" />
+        <image class="goods-image" :src="formatImage(item.outPic)" mode="aspectFill" />
         <view class="goods-info">
           <text class="goods-name">{{ item.goodsName }}</text>
           <view class="price-row">
@@ -48,11 +48,24 @@
 
     <!-- 自定义 Tab 栏 -->
     <tab-bar />
+
+    <!-- 登录提示弹窗 -->
+    <view class="login-overlay" v-if="showLoginTip" @click="showLoginTip = false">
+      <view class="login-dialog" @click.stop>
+        <view class="login-close" @click="showLoginTip = false">✕</view>
+        <view class="login-icon">🎉</view>
+        <view class="login-title">登录享更多优惠</view>
+        <view class="login-desc">登录后可领取优惠券、查看专属价格、积分抵扣等</view>
+        <view class="login-btn" @click="goLogin">立即登录</view>
+        <view class="login-skip" @click="showLoginTip = false">先逛逛</view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script>
 import { getSpecialPage, getSpecialClassifyGoods } from '@/api/mall/specialPage'
+import { getToken } from '@/utils/auth'
 
 export default {
   data() {
@@ -64,7 +77,8 @@ export default {
       page: 1,
       pageSize: 20,
       loading: false,
-      noMore: false
+      noMore: false,
+      showLoginTip: false
     }
   },
   async onShow() {
@@ -92,6 +106,11 @@ export default {
       const app = getApp()
       if (!app) return
 
+      // 未登录时显示登录提示
+      if (!getToken()) {
+        this.showLoginTip = true
+      }
+
       // 等待导航数据就绪
       await app.waitForNavigation()
       const pageId = app.globalData.specialId
@@ -109,8 +128,8 @@ export default {
           if (res.data.pageName) {
             uni.setNavigationBarTitle({ title: res.data.pageName })
           }
-          if (res.data.classifyList) {
-            this.classifyList = res.data.classifyList
+          if (res.data.specialPageClassifyList) {
+            this.classifyList = res.data.specialPageClassifyList
             if (this.classifyList.length) {
               this.switchClassify(this.classifyList[0])
             }
@@ -122,7 +141,8 @@ export default {
     },
 
     switchClassify(item) {
-      this.currentClassifyId = item.classifyId
+      this.currentClassifyId = item.specialGoodsClassifyId
+      this.page = 1
       this.page = 1
       this.goodsList = []
       this.noMore = false
@@ -133,14 +153,12 @@ export default {
       if (this.loading || !this.currentClassifyId) return
       this.loading = true
       try {
-        const res = await getSpecialClassifyGoods({
-          classifyId: this.currentClassifyId,
-          page: this.page,
-          pageSize: this.pageSize
-        })
-        if (res.rows) {
-          this.goodsList = this.page === 1 ? res.rows : [...this.goodsList, ...res.rows]
-          if (res.rows.length < this.pageSize) this.noMore = true
+        const res = await getSpecialClassifyGoods(this.currentClassifyId)
+        if (res.data && res.data.specialGoodsPoList) {
+          this.goodsList = res.data.specialGoodsPoList
+          this.noMore = true
+        } else {
+          this.goodsList = []
         }
       } catch (e) {
         console.error(e)
@@ -159,11 +177,16 @@ export default {
       if (!pic) return ''
       if (pic.startsWith('http')) return pic
       const app = getApp()
-      return (app.globalData.shopImg || '') + pic
+      return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
     },
 
     goDetail(item) {
       this.$tab.navigateTo('/pages/goods/detail/index?id=' + item.goodsId)
+    },
+
+    goLogin() {
+      this.showLoginTip = false
+      this.$tab.navigateTo('/pages/login')
     }
   }
 }
@@ -187,4 +210,43 @@ export default {
 .market-price { font-size: 24rpx; color: #999; text-decoration: line-through; margin-left: 12rpx; }
 .loading-tip { text-align: center; padding: 30rpx 0; font-size: 26rpx; color: #999; }
 .empty { text-align: center; padding: 200rpx 0; font-size: 28rpx; color: #999; }
+
+/* 登录提示弹窗 */
+.login-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.login-dialog {
+  width: 580rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 60rpx 40rpx 40rpx;
+  text-align: center;
+  position: relative;
+}
+.login-close {
+  position: absolute;
+  top: 20rpx;
+  right: 24rpx;
+  font-size: 36rpx;
+  color: #999;
+  padding: 10rpx;
+}
+.login-icon { font-size: 80rpx; margin-bottom: 20rpx; }
+.login-title { font-size: 36rpx; font-weight: bold; color: #333; margin-bottom: 16rpx; }
+.login-desc { font-size: 26rpx; color: #999; margin-bottom: 40rpx; line-height: 1.5; }
+.login-btn {
+  background: linear-gradient(135deg, #f2b974, #e4393c);
+  color: #fff;
+  font-size: 32rpx;
+  padding: 24rpx 0;
+  border-radius: 44rpx;
+  margin-bottom: 20rpx;
+}
+.login-skip { font-size: 26rpx; color: #999; padding: 10rpx 0; }
 </style>

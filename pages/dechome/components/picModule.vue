@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import { handleLink } from '@/utils/linkType'
+
 export default {
   name: 'PicModule',
   props: {
@@ -15,8 +17,8 @@ export default {
   },
   methods: {
     onClick() {
-      if (this.data.linkUrl) {
-        this.$tab.navigateTo(this.data.linkUrl)
+      if (this.data.linkType) {
+        handleLink(this.data.linkType, this.data.content || this.data.linkUrl, this.data.contentName)
       }
     }
   }

@@ -25,3 +25,11 @@ export function getStoreInfo() {
     method: 'get'
   })
 }
+
+// 根据字典类型获取字典数据
+export function getDictData(dictType) {
+  return request({
+    url: '/mobile/goods/dict/' + dictType,
+    method: 'get'
+  })
+}

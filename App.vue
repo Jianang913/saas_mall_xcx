@@ -2,7 +2,7 @@
 import config from './config'
 import { getToken } from '@/utils/auth'
 import { silentLogin } from '@/api/mall/login'
-import { getNavigation } from '@/api/mall/home'
+import { getNavigation, getDictData } from '@/api/mall/home'
 
 export default {
   onLaunch(options) {
@@ -21,6 +21,9 @@ export default {
 
       // 获取导航配置（不依赖登录）
       this.loadNavigation()
+
+      // 加载数据字典（不依赖登录）
+      this.loadDictData()
 
       // 自动静默登录（不阻塞页面加载）
       this.silentLoginAsync()
@@ -83,6 +86,60 @@ export default {
       } catch (e) {
         console.error('加载导航配置失败', e)
       }
+    },
+
+    // 加载数据字典
+    async loadDictData() {
+      try {
+        const dictTypes = ['adorn_link_type']
+        for (const dictType of dictTypes) {
+          const res = await getDictData(dictType)
+          if (res.code === 200 && res.data) {
+            this.globalData.dict[dictType] = res.data
+          }
+        }
+        this.globalData.dictReady = true
+        if (this._dictCallbacks) {
+          this._dictCallbacks.forEach(cb => cb(this.globalData.dict))
+          this._dictCallbacks = null
+        }
+      } catch (e) {
+        console.error('加载字典数据失败', e)
+      }
+    },
+
+    // 等待字典数据就绪
+    waitForDict() {
+      return new Promise((resolve) => {
+        if (this.globalData.dictReady) {
+          resolve(this.globalData.dict)
+        } else {
+          if (!this._dictCallbacks) this._dictCallbacks = []
+          this._dictCallbacks.push(resolve)
+        }
+      })
+    },
+
+    /**
+     * 根据字典类型和值获取标签
+     * @param {string} dictType 字典类型
+     * @param {string} dictValue 字典值
+     * @returns {string} 字典标签
+     */
+    getDictLabel(dictType, dictValue) {
+      const list = this.globalData.dict[dictType]
+      if (!list) return ''
+      const item = list.find(d => d.dictValue === String(dictValue))
+      return item ? item.dictLabel : ''
+    },
+
+    /**
+     * 根据字典类型获取所有选项
+     * @param {string} dictType 字典类型
+     * @returns {Array} 字典数据列表
+     */
+    getDictList(dictType) {
+      return this.globalData.dict[dictType] || []
     },
 
     // 静默登录（异步，不阻塞页面）
@@ -176,6 +233,8 @@ export default {
     safeAreaBottom: 0,
     specialId: null,
     navigationReady: false,
+    dictReady: false,
+    dict: {},
     loginReady: false,
     tabBar: { list: [] },
     shopImg: 'http://localhost:8080',

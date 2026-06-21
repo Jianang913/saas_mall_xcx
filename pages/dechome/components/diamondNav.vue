@@ -13,6 +13,8 @@
 </template>
 
 <script>
+import { handleLink } from '@/utils/linkType'
+
 export default {
   name: 'DiamondNav',
   props: {
@@ -39,9 +41,7 @@ export default {
       return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
     },
     onClick(item) {
-      if (item.content) {
-        this.$tab.navigateTo(item.content)
-      }
+      handleLink(item.linkType, item.content, item.contentName)
     }
   }
 }

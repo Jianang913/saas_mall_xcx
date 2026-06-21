@@ -91,8 +91,10 @@ export default {
 
       // 跳转
       const targetPath = item.pagePath || '/pages/dechome/index'
+      const basePath = targetPath.split('?')[0]
       if (this.isTabPage(targetPath)) {
-        uni.switchTab({ url: targetPath })
+        // switchTab 不支持 query 参数，装修页通过 globalData.specialId 传递
+        uni.switchTab({ url: basePath })
       } else {
         uni.navigateTo({ url: targetPath })
       }
@@ -106,7 +108,9 @@ export default {
         '/pages/special/index',
         '/pages/mine/index'
       ]
-      return tabPages.includes(path)
+      // 去掉查询参数再匹配（如 /pages/dechome/index?specialId=xxx）
+      const basePath = path.split('?')[0]
+      return tabPages.includes(basePath)
     }
   }
 }
