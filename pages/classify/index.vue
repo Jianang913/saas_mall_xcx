@@ -51,6 +51,9 @@
         </view>
       </scroll-view>
     </view>
+
+    <!-- 自定义 Tab 栏 -->
+    <tab-bar />
   </view>
 </template>
 
@@ -75,6 +78,11 @@ export default {
   },
   onLoad() {
     this.loadCategories()
+  },
+  onShow() {
+    // #ifdef MP-WEIXIN
+    uni.hideTabBar({ animation: false })
+    // #endif
   },
   onPullDownRefresh() {
     this.loadCategories().then(() => {
@@ -123,10 +131,11 @@ export default {
 
 <style lang="scss" scoped>
 .classify-page {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: #fff;
+  padding-bottom: 130rpx;
 }
 
 .search-bar {

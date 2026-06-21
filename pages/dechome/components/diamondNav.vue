@@ -1,13 +1,13 @@
 <template>
-  <view class="diamond-nav">
+  <view class="diamond-nav" v-if="navList.length">
     <view
       class="diamond-item"
-      v-for="item in list"
-      :key="item.id"
+      v-for="(item, index) in navList"
+      :key="index"
       @click="onClick(item)"
     >
-      <image class="diamond-icon" :src="item.icon" mode="aspectFit" />
-      <text class="diamond-name">{{ item.name }}</text>
+      <image class="diamond-icon" :src="formatImage(item.pic || item.icon)" mode="aspectFit" />
+      <text class="diamond-name">{{ item.title || item.name }}</text>
     </view>
   </view>
 </template>
@@ -16,15 +16,27 @@
 export default {
   name: 'DiamondNav',
   props: {
-    list: {
-      type: Array,
-      default: () => []
+    data: { type: Object, default: () => ({}) }
+  },
+  computed: {
+    navList() {
+      if (this.data.re && this.data.re.length) return this.data.re
+      const content = this.data.pageContent
+      if (Array.isArray(content)) return content
+      if (content && content.list) return content.list
+      return []
     }
   },
   methods: {
+    formatImage(pic) {
+      if (!pic) return ''
+      if (pic.startsWith('http')) return pic
+      const app = getApp()
+      return (app.globalData.shopImg || '') + pic
+    },
     onClick(item) {
-      if (item.link) {
-        this.$tab.navigateTo(item.link)
+      if (item.content) {
+        this.$tab.navigateTo(item.content)
       }
     }
   }
@@ -39,7 +51,6 @@ export default {
   background-color: #fff;
   margin-bottom: 20rpx;
 }
-
 .diamond-item {
   width: 20%;
   display: flex;
@@ -47,15 +58,6 @@ export default {
   align-items: center;
   padding: 16rpx 0;
 }
-
-.diamond-icon {
-  width: 88rpx;
-  height: 88rpx;
-  margin-bottom: 12rpx;
-}
-
-.diamond-name {
-  font-size: 24rpx;
-  color: #333;
-}
+.diamond-icon { width: 88rpx; height: 88rpx; margin-bottom: 12rpx; }
+.diamond-name { font-size: 24rpx; color: #333; }
 </style>

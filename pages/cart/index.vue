@@ -64,6 +64,9 @@
         </view>
       </view>
     </view>
+
+    <!-- 自定义 Tab 栏 -->
+    <tab-bar />
   </view>
 </template>
 
@@ -94,6 +97,9 @@ export default {
     }
   },
   onShow() {
+    // #ifdef MP-WEIXIN
+    uni.hideTabBar({ animation: false })
+    // #endif
     this.loadCart()
   },
   onPullDownRefresh() {
@@ -186,7 +192,7 @@ export default {
 .cart-page {
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding-bottom: 120rpx;
+  padding-bottom: 230rpx;
 }
 
 .cart-header {

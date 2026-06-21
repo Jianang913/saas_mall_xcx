@@ -1,7 +1,7 @@
 <template>
   <view class="special-page">
     <!-- Banner -->
-    <image v-if="pageData.pagePic" class="page-banner" :src="pageData.pagePic" mode="widthFix" />
+    <image v-if="pageData.pagePic" class="page-banner" :src="formatImage(pageData.pagePic)" mode="widthFix" />
 
     <!-- 图文说明 -->
     <view class="page-content" v-if="pageData.specialPageImageText">
@@ -31,7 +31,7 @@
         :key="item.goodsId"
         @click="goDetail(item)"
       >
-        <image class="goods-image" :src="item.goodsImage" mode="aspectFill" />
+        <image class="goods-image" :src="formatImage(item.goodsImage)" mode="aspectFill" />
         <view class="goods-info">
           <text class="goods-name">{{ item.goodsName }}</text>
           <view class="price-row">
@@ -45,6 +45,9 @@
       <view class="loading-tip" v-else-if="noMore && goodsList.length"><text>没有更多了</text></view>
       <view class="empty" v-if="!goodsList.length && !loading"><text>暂无商品</text></view>
     </scroll-view>
+
+    <!-- 自定义 Tab 栏 -->
+    <tab-bar />
   </view>
 </template>
 
@@ -54,7 +57,6 @@ import { getSpecialPage, getSpecialClassifyGoods } from '@/api/mall/specialPage'
 export default {
   data() {
     return {
-      pageId: '',
       pageData: {},
       classifyList: [],
       currentClassifyId: '',
@@ -65,18 +67,48 @@ export default {
       noMore: false
     }
   },
-  onLoad(options) {
-    if (options.id) {
-      this.pageId = options.id
-    }
-    this.loadPage()
+  async onShow() {
+    // 隐藏原生 Tab 栏
+    // #ifdef MP-WEIXIN
+    uni.hideTabBar({ animation: false })
+    // #endif
+
+    await this.loadPage()
+  },
+  onLoad() {
+    // 监听专题页切换事件（从 Tab 栏组件触发）
+    uni.$on('specialPageRefresh', (linkUrlId) => {
+      this.pageData = {}
+      this.classifyList = []
+      this.goodsList = []
+      this.loadPage()
+    })
+  },
+  onUnload() {
+    uni.$off('specialPageRefresh')
   },
   methods: {
     async loadPage() {
+      const app = getApp()
+      if (!app) return
+
+      // 等待导航数据就绪
+      await app.waitForNavigation()
+      const pageId = app.globalData.specialId
+
+      if (!pageId) {
+        console.warn('未获取到专题页ID')
+        return
+      }
+
       try {
-        const res = await getSpecialPage(this.pageId)
+        const res = await getSpecialPage(pageId)
         if (res.data) {
           this.pageData = res.data
+          // 设置导航栏标题
+          if (res.data.pageName) {
+            uni.setNavigationBarTitle({ title: res.data.pageName })
+          }
           if (res.data.classifyList) {
             this.classifyList = res.data.classifyList
             if (this.classifyList.length) {
@@ -85,9 +117,10 @@ export default {
           }
         }
       } catch (e) {
-        console.error(e)
+        console.error('加载专题页失败', e)
       }
     },
+
     switchClassify(item) {
       this.currentClassifyId = item.classifyId
       this.page = 1
@@ -95,6 +128,7 @@ export default {
       this.noMore = false
       this.loadGoods()
     },
+
     async loadGoods() {
       if (this.loading || !this.currentClassifyId) return
       this.loading = true
@@ -114,11 +148,20 @@ export default {
         this.loading = false
       }
     },
+
     loadMore() {
       if (this.noMore || this.loading) return
       this.page++
       this.loadGoods()
     },
+
+    formatImage(pic) {
+      if (!pic) return ''
+      if (pic.startsWith('http')) return pic
+      const app = getApp()
+      return (app.globalData.shopImg || '') + pic
+    },
+
     goDetail(item) {
       this.$tab.navigateTo('/pages/goods/detail/index?id=' + item.goodsId)
     }
@@ -127,14 +170,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.special-page { min-height: 100vh; background-color: #f5f5f5; }
+.special-page { min-height: 100vh; background-color: #f5f5f5; padding-bottom: 130rpx; }
 .page-banner { width: 100%; display: block; }
 .page-content { background-color: #fff; padding: 24rpx; margin-bottom: 20rpx; }
 .classify-tabs { background-color: #fff; margin-bottom: 20rpx; }
 .tabs-scroll { white-space: nowrap; padding: 0 12rpx; }
 .tab-item { display: inline-block; padding: 20rpx 24rpx; font-size: 28rpx; color: #666; }
 .tab-item.active { color: #f2b974; font-weight: bold; border-bottom: 4rpx solid #f2b974; }
-.goods-list { height: calc(100vh - 400rpx); padding: 0 20rpx; }
+.goods-list { height: calc(100vh - 500rpx); padding: 0 20rpx; }
 .goods-card { background-color: #fff; border-radius: 12rpx; margin-bottom: 20rpx; overflow: hidden; }
 .goods-image { width: 100%; height: 360rpx; }
 .goods-info { padding: 20rpx; }

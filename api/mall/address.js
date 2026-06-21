@@ -1,18 +1,17 @@
 import request from '@/utils/request'
 
 // 地址列表
-export function listAddress(params) {
+export function listAddress() {
   return request({
-    url: '/user/userAddress/list',
-    method: 'get',
-    params
+    url: '/mobile/address/list',
+    method: 'get'
   })
 }
 
 // 新增地址
 export function addAddress(data) {
   return request({
-    url: '/user/userAddress',
+    url: '/mobile/address/add',
     method: 'post',
     data
   })
@@ -21,7 +20,7 @@ export function addAddress(data) {
 // 修改地址
 export function updateAddress(data) {
   return request({
-    url: '/user/userAddress',
+    url: '/mobile/address/update',
     method: 'put',
     data
   })
@@ -30,7 +29,7 @@ export function updateAddress(data) {
 // 删除地址
 export function delAddress(addressId) {
   return request({
-    url: '/user/userAddress/' + addressId,
+    url: '/mobile/address/' + addressId,
     method: 'delete'
   })
 }
@@ -38,7 +37,7 @@ export function delAddress(addressId) {
 // 获取省市区数据
 export function getRegion() {
   return request({
-    url: '/user/region/config',
+    url: '/mobile/address/region',
     method: 'get'
   })
 }

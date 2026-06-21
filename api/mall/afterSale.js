@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 申请售后
 export function applyAfterSale(data) {
   return request({
-    url: '/order/userOrderAfter/apply',
+    url: '/mobile/afterSale/apply',
     method: 'post',
     data
   })
@@ -12,7 +12,7 @@ export function applyAfterSale(data) {
 // 售后列表
 export function listAfterSale(params) {
   return request({
-    url: '/order/userOrderAfter/list',
+    url: '/mobile/afterSale/list',
     method: 'get',
     params
   })
@@ -21,7 +21,7 @@ export function listAfterSale(params) {
 // 售后详情
 export function getAfterSale(orderAfterId) {
   return request({
-    url: '/order/userOrderAfter/' + orderAfterId,
+    url: '/mobile/afterSale/detail/' + orderAfterId,
     method: 'get'
   })
 }
@@ -29,7 +29,7 @@ export function getAfterSale(orderAfterId) {
 // 取消售后
 export function cancelAfterSale(data) {
   return request({
-    url: '/order/userOrderAfter/cancel',
+    url: '/mobile/afterSale/cancel',
     method: 'post',
     data
   })
@@ -38,17 +38,8 @@ export function cancelAfterSale(data) {
 // 填写退货物流
 export function addRefundCourier(data) {
   return request({
-    url: '/order/userOrderAfter/addRefundCourier',
+    url: '/mobile/afterSale/addRefundCourier',
     method: 'post',
     data
-  })
-}
-
-// 获取售后地址
-export function getAfterSaleAddress(addressId) {
-  return request({
-    url: '/user/userAddress/getAfterSaleAddress',
-    method: 'get',
-    params: { addressId }
   })
 }

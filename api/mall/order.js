@@ -1,9 +1,9 @@
 import request from '@/utils/request'
 
-// 准备订单（从购物车或立即购买）
+// 准备订单
 export function readyOrder(data) {
   return request({
-    url: '/order/userOrder/readyOrder',
+    url: '/mobile/order/readyOrder',
     method: 'post',
     data
   })
@@ -12,7 +12,7 @@ export function readyOrder(data) {
 // 提交订单
 export function generateOrder(data) {
   return request({
-    url: '/order/userOrder/generateOrder',
+    url: '/mobile/order/submit',
     method: 'post',
     data
   })
@@ -21,7 +21,7 @@ export function generateOrder(data) {
 // 订单列表
 export function listOrder(params) {
   return request({
-    url: '/order/userOrder/list',
+    url: '/mobile/order/list',
     method: 'get',
     params
   })
@@ -30,7 +30,7 @@ export function listOrder(params) {
 // 订单详情
 export function getOrder(orderId) {
   return request({
-    url: '/order/userOrder/' + orderId,
+    url: '/mobile/order/detail/' + orderId,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getOrder(orderId) {
 // 取消订单
 export function cancelOrder(data) {
   return request({
-    url: '/order/userOrder/cancelOrder',
+    url: '/mobile/order/cancel',
     method: 'post',
     data
   })
@@ -47,7 +47,7 @@ export function cancelOrder(data) {
 // 确认收货
 export function confirmReceive(data) {
   return request({
-    url: '/order/userOrder/confirmReceive',
+    url: '/mobile/order/confirmReceive',
     method: 'post',
     data
   })
@@ -56,7 +56,7 @@ export function confirmReceive(data) {
 // 删除订单
 export function delOrder(orderId) {
   return request({
-    url: '/order/userOrder/' + orderId,
+    url: '/mobile/order/' + orderId,
     method: 'delete'
   })
 }
@@ -64,7 +64,7 @@ export function delOrder(orderId) {
 // 微信支付
 export function wxPay(data) {
   return request({
-    url: '/order/pay/pay',
+    url: '/mobile/order/pay',
     method: 'post',
     data
   })
@@ -73,7 +73,7 @@ export function wxPay(data) {
 // 获取订单数量统计
 export function getOrderNum() {
   return request({
-    url: '/order/userOrder/orderNum',
+    url: '/mobile/order/count',
     method: 'get'
   })
 }
@@ -81,8 +81,7 @@ export function getOrderNum() {
 // 获取物流信息
 export function getDeliveryMsg(orderId) {
   return request({
-    url: '/order/userOrder/getDeliveryMsg',
-    method: 'get',
-    params: { orderId }
+    url: '/mobile/order/delivery/' + orderId,
+    method: 'get'
   })
 }

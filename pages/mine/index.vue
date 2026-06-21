@@ -86,6 +86,9 @@
         <text class="cuIcon-right"></text>
       </view>
     </view>
+
+    <!-- 自定义 Tab 栏 -->
+    <tab-bar />
   </view>
 </template>
 
@@ -114,6 +117,9 @@ export default {
     }
   },
   onShow() {
+    // #ifdef MP-WEIXIN
+    uni.hideTabBar({ animation: false })
+    // #endif
     if (this.$store.getters.token) {
       this.loadOrderNum()
     }
@@ -165,6 +171,7 @@ export default {
 .mine-page {
   min-height: 100vh;
   background-color: #f5f5f5;
+  padding-bottom: 130rpx;
 }
 
 .user-header {

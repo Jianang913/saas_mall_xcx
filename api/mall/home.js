@@ -3,34 +3,16 @@ import request from '@/utils/request'
 // 获取装修页面数据
 export function getAdornPageData(params) {
   return request({
-    url: '/goods/adornPage/getAdornPageDataVo',
+    url: '/mobile/goods/adornPageData',
     method: 'get',
     params
   })
 }
 
-// 获取轮播图列表
-export function listBanner(params) {
+// 获取导航配置（Tab 栏）
+export function getNavigation(params) {
   return request({
-    url: '/goods/banner/list',
-    method: 'get',
-    params
-  })
-}
-
-// 获取金刚位列表
-export function listDiamond(params) {
-  return request({
-    url: '/goods/diamond/list',
-    method: 'get',
-    params
-  })
-}
-
-// 获取导航列表
-export function listNavigation(params) {
-  return request({
-    url: '/goods/navigation/list',
+    url: '/mobile/goods/navigation',
     method: 'get',
     params
   })
@@ -39,7 +21,7 @@ export function listNavigation(params) {
 // 获取店铺信息
 export function getStoreInfo() {
   return request({
-    url: '/goods/adornContactus/getStoreInfo',
+    url: '/mobile/goods/storeInfo',
     method: 'get'
   })
 }
