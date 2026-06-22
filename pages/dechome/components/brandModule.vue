@@ -2,7 +2,7 @@
   <view class="brand-module" v-if="list.length > 0">
     <view class="brand-list">
       <view v-for="(item, i) in list" :key="i" class="brand-item" @click="onClick(item)">
-        <image class="brand-logo" :src="formatImage(item.picture)" mode="aspectFill" lazy-load />
+        <image class="brand-logo" :src="formatImage(item.picture)" mode="aspectFill" />
         <text class="brand-name">{{ item.title || '品牌' }}</text>
       </view>
     </view>

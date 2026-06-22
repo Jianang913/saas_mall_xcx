@@ -10,8 +10,8 @@
     </scroll-view>
     <!-- 商品列表 -->
     <view class="goods-list">
-      <view v-for="(item, i) in currentGoods" :key="item.goodsId || i" class="goods-item" @click="goDetail(item)">
-        <image class="goods-img" :src="formatImage(item.goodsImage || item.outPic)" mode="aspectFill" lazy-load />
+      <view v-for="(item, i) in currentGoods" :key="i" class="goods-item" @click="goDetail(item)">
+        <image class="goods-img" :src="formatImage(item.goodsImage || item.outPic)" mode="aspectFill" />
         <view class="goods-info">
           <text class="goods-name">{{ item.goodsName }}</text>
           <view class="goods-price-row">

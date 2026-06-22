@@ -15,6 +15,8 @@
     <!-- 装修页面模块 -->
     <scroll-view scroll-y class="page-scroll" @scroll="onScroll">
       <block v-for="(module, index) in moduleList" :key="index">
+        <!-- moduleId=1: 搜索入口 -->
+        <search-module v-if="module.moduleId == 1" :data="module" />
         <!-- moduleId=2: 轮播图 -->
         <swiper-module v-if="module.moduleId == 2" :data="module" />
         <!-- moduleId=3: 金刚位 -->
@@ -23,12 +25,24 @@
         <pic-module v-if="module.moduleId == 4" :data="module" />
         <!-- moduleId=5: 商品模块 -->
         <shop-module v-if="module.moduleId == 5" :data="module" @click="goGoodsDetail" />
+        <!-- moduleId=6: 视频模块 -->
+        <video-module v-if="module.moduleId == 6" :data="module" />
         <!-- moduleId=7: 分割线 -->
         <line-module v-if="module.moduleId == 7" :data="module" />
         <!-- moduleId=8: 标题模块 -->
         <title-module v-if="module.moduleId == 8" :data="module" />
+        <!-- moduleId=9: 商品分组 -->
+        <goods-group-module v-if="module.moduleId == 9" :data="module" />
         <!-- moduleId=11: 公告 -->
         <notice-module v-if="module.moduleId == 11" :data="module" />
+        <!-- moduleId=12: 倒计时 -->
+        <countdown-module v-if="module.moduleId == 12" :data="module" />
+        <!-- moduleId=19: 联系我们 -->
+        <contact-module v-if="module.moduleId == 19" :data="module" />
+        <!-- moduleId=20: 品牌展示 -->
+        <brand-module v-if="module.moduleId == 20" :data="module" />
+        <!-- moduleId=21: 大屏轮播 -->
+        <full-screen-module v-if="module.moduleId == 21" :data="module" />
       </block>
 
       <uni-load-more v-if="!loading && !moduleList.length" status="noData" />
@@ -49,10 +63,20 @@ import ShopModule from './components/shopModule.vue'
 import LineModule from './components/lineModule.vue'
 import TitleModule from './components/titleModule.vue'
 import NoticeModule from './components/noticeModule.vue'
+import SearchModule from './components/searchModule.vue'
+import VideoModule from './components/videoModule.vue'
+import GoodsGroupModule from './components/goodsGroupModule.vue'
+import CountdownModule from './components/countdownModule.vue'
+import ContactModule from './components/contactModule.vue'
+import BrandModule from './components/brandModule.vue'
+import FullScreenModule from './components/fullScreenModule.vue'
 import { getAdornPageData } from '@/api/mall/home'
 
 export default {
-  components: { SwiperModule, DiamondNav, PicModule, ShopModule, LineModule, TitleModule, NoticeModule },
+  components: {
+    SwiperModule, DiamondNav, PicModule, ShopModule, LineModule, TitleModule, NoticeModule,
+    SearchModule, VideoModule, GoodsGroupModule, CountdownModule, ContactModule, BrandModule, FullScreenModule
+  },
   data() {
     return {
       navOpacity: 0,
@@ -87,10 +111,8 @@ export default {
 
         const res = await getAdornPageData({ pageId })
         if (res.code === 200 && res.data) {
-          // 后端返回 { jsonArray: [...], adornPageVo: {...} }
           const { jsonArray, adornPageVo } = res.data
           if (jsonArray && jsonArray.length) {
-            // 解析 style 字段（JSON 字符串）
             this.moduleList = jsonArray.map(item => {
               const parsed = { ...item }
               try {
