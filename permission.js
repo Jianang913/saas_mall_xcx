@@ -10,16 +10,6 @@ const authPages = [
   '/pages/order/afterSale/index',  // 售后列表
   '/pages/order/afterSale/apply/index',
   '/pages/order/afterSale/detail/index',
-  '/pages/address/list/index',     // 收货地址
-  '/pages/address/edit/index',
-  '/pages/mine/index',             // 我的
-  '/pages/mine/collect/index',     // 收藏
-  '/pages/mine/track/index',       // 浏览记录
-  '/pages/mine/coupon/index',      // 优惠券
-  '/pages/mine/info/index',
-  '/pages/mine/info/edit',
-  '/pages/mine/pwd/index',
-  '/pages/mine/setting/index',
 ]
 
 // 检查是否需要登录

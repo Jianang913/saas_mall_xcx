@@ -7,6 +7,9 @@
         <view class="user-detail">
           <text class="user-name">{{ nickname || '未登录' }}</text>
           <text class="user-id" v-if="nickname">ID: {{ userId }}</text>
+          <view v-if="!nickname" class="login-btn" @click.stop="goLogin">
+            <text>点击登录</text>
+          </view>
         </view>
       </view>
     </view>
@@ -135,32 +138,31 @@ export default {
         console.error(e)
       }
     },
+    goLogin() {
+      this.$tab.navigateTo('/pages/login')
+    },
     goProfile() {
       if (!this.nickname) {
-        this.$tab.navigateTo('/pages/login')
+        this.goLogin()
         return
       }
       this.$tab.navigateTo('/pages/mine/info/index')
     },
     goOrderList(status) {
       if (!this.nickname) {
-        this.$tab.navigateTo('/pages/login')
+        this.goLogin()
         return
       }
       this.$tab.navigateTo('/pages/order/list/index?status=' + status)
     },
     goAfterSale() {
       if (!this.nickname) {
-        this.$tab.navigateTo('/pages/login')
+        this.goLogin()
         return
       }
       this.$tab.navigateTo('/pages/order/afterSale/index')
     },
     goPage(url) {
-      if (!this.nickname) {
-        this.$tab.navigateTo('/pages/login')
-        return
-      }
       this.$tab.navigateTo(url)
     }
   }
@@ -208,6 +210,19 @@ export default {
   color: rgba(255, 255, 255, 0.8);
   margin-top: 8rpx;
   display: block;
+}
+
+.login-btn {
+  margin-top: 12rpx;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 8rpx 24rpx;
+  border-radius: 24rpx;
+  display: inline-block;
+}
+
+.login-btn text {
+  font-size: 24rpx;
+  color: #fff;
 }
 
 .order-section {
