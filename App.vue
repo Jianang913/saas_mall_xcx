@@ -71,8 +71,15 @@ export default {
 
           this.globalData.tabBar.list = tabs
 
-          // 找第一个装修页(linkType=2)的 linkUrlId 作为首页
-          const homeTab = tabs.find(t => String(t.linkType) === '2')
+          // 优先找装修页(linkType=2)，fallback 找指向 dechome 且有 linkUrlId 的系统页
+          let homeTab = tabs.find(t => String(t.linkType) === '2' && t.linkUrlId)
+          if (!homeTab) {
+            homeTab = tabs.find(t =>
+              String(t.linkType) === '0' &&
+              t.pagePath && t.pagePath.startsWith('/pages/dechome') &&
+              t.linkUrlId
+            )
+          }
           if (homeTab && homeTab.linkUrlId) {
             this.globalData.specialId = homeTab.linkUrlId
           }
