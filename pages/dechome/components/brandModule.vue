@@ -36,7 +36,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.brand-module { background: #fff; padding: 20rpx; margin-bottom: 20rpx; }
+.brand-module { background: #fff; padding: 20rpx;  }
 .brand-list { display: flex; flex-wrap: wrap; gap: 20rpx; }
 .brand-item {
   display: flex; flex-direction: column; align-items: center; gap: 10rpx;

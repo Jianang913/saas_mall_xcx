@@ -44,7 +44,7 @@ export default {
 <style lang="scss" scoped>
 .contact-module {
   display: flex; align-items: center; padding: 24rpx;
-  background: #fff; gap: 20rpx; margin-bottom: 20rpx;
+  background: #fff; gap: 20rpx; 
 }
 .contact-left { flex: 1; }
 .contact-name { font-size: 30rpx; font-weight: 600; color: #333; display: block; margin-bottom: 8rpx; }

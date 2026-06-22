@@ -56,11 +56,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.shop-module { background-color: #fff; margin-bottom: 20rpx; padding: 20rpx; }
-.module-header { margin-bottom: 20rpx; }
+.shop-module { background-color: #fff;  padding: 20rpx; }
+.module-header {  }
 .module-title { font-size: 32rpx; font-weight: bold; color: #333; }
 .goods-list { display: flex; flex-wrap: wrap; margin: 0 -10rpx; }
-.goods-item { width: 50%; padding: 0 10rpx; margin-bottom: 20rpx; box-sizing: border-box; }
+.goods-item { width: 50%; padding: 0 10rpx;  box-sizing: border-box; }
 .goods-image { width: 100%; height: 320rpx; border-radius: 12rpx; }
 .goods-info { padding: 12rpx 0; }
 .goods-name { font-size: 26rpx; color: #333; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }

@@ -55,7 +55,7 @@ export default {
   align-items: center;
   padding: 16rpx 24rpx;
   background-color: #FFF8E1;
-  margin-bottom: 20rpx;
+  
 }
 
 .notice-icon {

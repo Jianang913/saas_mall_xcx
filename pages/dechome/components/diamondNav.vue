@@ -50,7 +50,7 @@ export default {
 <style lang="scss" scoped>
 .diamond-nav {
   background-color: #fff;
-  margin-bottom: 20rpx;
+  
 }
 
 /* 单行滑动 */

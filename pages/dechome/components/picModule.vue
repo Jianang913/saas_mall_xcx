@@ -46,7 +46,7 @@ export default {
 
 <style lang="scss" scoped>
 .pic-module {
-  margin-bottom: 20rpx;
+  
 }
 
 .pic-image {

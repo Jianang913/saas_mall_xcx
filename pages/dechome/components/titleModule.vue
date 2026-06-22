@@ -48,7 +48,7 @@ export default {
 <style lang="scss" scoped>
 .title-module {
   padding: 24rpx;
-  margin-bottom: 20rpx;
+  
 }
 
 .title-text {

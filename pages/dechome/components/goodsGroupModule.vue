@@ -64,7 +64,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.goods-group-module { background: #fff; margin-bottom: 20rpx; }
+.goods-group-module { background: #fff;  }
 .tab-bar { white-space: nowrap; border-bottom: 1rpx solid #f0f0f0; padding: 0 12rpx; }
 .tab-item {
   display: inline-block; padding: 16rpx 24rpx; font-size: 26rpx; color: #666;
