@@ -201,7 +201,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.special-page { min-height: 100vh; background-color: #f5f5f5; padding-bottom: 130rpx; }
+.special-page { min-height: 100vh; background-color: #fff; padding-bottom: 130rpx; }
 .page-banner { width: 100%; display: block; }
 .page-content { background-color: #fff; padding: 24rpx; margin-bottom: 20rpx; }
 .classify-tabs { background-color: #fff; margin-bottom: 20rpx; }
@@ -209,7 +209,7 @@ export default {
 .tab-item { display: inline-block; padding: 20rpx 24rpx; font-size: 28rpx; color: #666; }
 .tab-item.active { color: #f2b974; font-weight: bold; border-bottom: 4rpx solid #f2b974; }
 .goods-list { height: calc(100vh - 500rpx); padding: 0 20rpx; }
-.goods-card { background-color: #fff; border-radius: 12rpx; margin-bottom: 20rpx; overflow: hidden; }
+.goods-card { background-color: #fff; margin-bottom: 20rpx; overflow: hidden; }
 .goods-image { width: 100%; height: 360rpx; }
 .goods-info { padding: 20rpx; }
 .goods-name { font-size: 28rpx; color: #333; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

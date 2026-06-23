@@ -199,7 +199,7 @@ export default {
 <style lang="scss" scoped>
 .cart-page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #fff;
   padding-bottom: 230rpx;
 }
 
@@ -224,7 +224,7 @@ export default {
   align-items: center;
   padding: 24rpx;
   background-color: #fff;
-  margin-bottom: 2rpx;
+  border-bottom: 1rpx solid #eee;
 }
 
 .item-check {
@@ -243,7 +243,6 @@ export default {
 .item-image {
   width: 160rpx;
   height: 160rpx;
-  border-radius: 12rpx;
   margin-right: 20rpx;
 }
 
