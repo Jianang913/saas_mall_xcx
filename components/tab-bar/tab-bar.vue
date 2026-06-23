@@ -31,23 +31,42 @@ export default {
   },
   created() {
     this.initTabBar()
-    this._timer = setInterval(() => {
-      const app = getApp()
-      if (app && app.globalData.tabBar.list.length) {
-        this.updateSelected()
-      }
-    }, 300)
+    // 监听专题页切换事件，更新选中态
+    this._onRefresh = () => this.updateSelected()
+    uni.$on('specialPageRefresh', this._onRefresh)
   },
-  beforeDestroy() {
-    if (this._timer) clearInterval(this._timer)
+  beforeUnmount() {
+    if (this._retryTimer) clearTimeout(this._retryTimer)
+    uni.$off('specialPageRefresh', this._onRefresh)
   },
   methods: {
     async initTabBar() {
       const app = getApp()
       if (!app) return
-      const tabs = await app.waitForNavigation()
-      this.tabList = tabs.map(tab => ({ ...tab }))
-      this.updateSelected()
+
+      // 如果导航数据未就绪，轮询等待（最多 5 秒）
+      if (!app.globalData.navigationReady) {
+        let count = 0
+        const poll = () => {
+          if (app.globalData.navigationReady || count > 50) {
+            this._loadTabs(app)
+            return
+          }
+          count++
+          this._retryTimer = setTimeout(poll, 100)
+        }
+        poll()
+      } else {
+        this._loadTabs(app)
+      }
+    },
+
+    _loadTabs(app) {
+      const tabs = app.globalData.tabBar.list
+      if (tabs && tabs.length) {
+        this.tabList = tabs.map(tab => ({ ...tab }))
+        this.updateSelected()
+      }
     },
 
     updateSelected() {

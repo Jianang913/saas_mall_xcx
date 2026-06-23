@@ -90,9 +90,6 @@ export default {
     this.statusBarHeight = app.globalData.statusBarHeight || 0
   },
   async onShow() {
-    // #ifdef MP-WEIXIN
-    uni.hideTabBar({ animation: false })
-    // #endif
     await this.loadPageData()
   },
   methods: {
@@ -115,9 +112,14 @@ export default {
           if (jsonArray && jsonArray.length) {
             this.moduleList = jsonArray.map(item => {
               const parsed = { ...item }
-              try {
-                if (typeof item.style === 'string') parsed.style = JSON.parse(item.style)
-              } catch (e) {}
+              if (typeof item.style === 'string') {
+                try {
+                  parsed.style = JSON.parse(item.style)
+                } catch (e) {
+                  console.warn('模块样式JSON解析失败:', item.style)
+                  parsed.style = {}
+                }
+              }
               return parsed
             })
           }

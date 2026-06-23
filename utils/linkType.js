@@ -43,7 +43,7 @@ export function handleLink(linkType, content, contentName) {
       // content 存专题页 ID，设置到 globalData 后跳转
       if (content) {
         const app = getApp()
-        if (app) app.globalData.specialId = content
+        if (app) app.globalData.specialId = String(content)
       }
       uni.switchTab({ url: '/pages/special/index' })
       // 通知专题页刷新数据
@@ -52,9 +52,11 @@ export function handleLink(linkType, content, contentName) {
 
     case 2: // 装修页
       // content 存装修页 ID，跳转到首页并携带 specialId
-      uni.navigateTo({
-        url: '/pages/dechome/index?specialId=' + content
-      })
+      if (content) {
+        uni.navigateTo({
+          url: '/pages/dechome/index?specialId=' + encodeURIComponent(content)
+        })
+      }
       break
 
     case 3: // 商品分类
@@ -72,11 +74,13 @@ export function handleLink(linkType, content, contentName) {
 
     case 10: // 跳转其他小程序
       // content 存 appId，contentName 存路径
-      uni.navigateToMiniProgram({
-        appId: content,
-        path: contentName || '',
-        envVersion: 'release'
-      })
+      if (content) {
+        uni.navigateToMiniProgram({
+          appId: content,
+          path: contentName || '',
+          envVersion: 'release'
+        })
+      }
       break
 
     case 11: // 优惠券
@@ -84,9 +88,11 @@ export function handleLink(linkType, content, contentName) {
       break
 
     case 12: // 自定义链接（H5 webview）
-      uni.navigateTo({
-        url: '/pages/common/webview/index?url=' + encodeURIComponent(content)
-      })
+      if (content) {
+        uni.navigateTo({
+          url: '/pages/common/webview/index?url=' + encodeURIComponent(content)
+        })
+      }
       break
 
     case 13: // 案例
@@ -98,7 +104,9 @@ export function handleLink(linkType, content, contentName) {
       break
 
     case 15: // 商品详情
-      uni.navigateTo({ url: '/pages/goods/detail/index?id=' + content })
+      if (content) {
+        uni.navigateTo({ url: '/pages/goods/detail/index?id=' + encodeURIComponent(content) })
+      }
       break
 
     case 21: // 客服（需在模板中用 open-type="contact"，此处在 JS 中无法触发）

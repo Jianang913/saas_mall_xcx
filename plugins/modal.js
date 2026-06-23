@@ -42,8 +42,13 @@ export default {
         confirmText: '确定',
         success: function(res) {
           if (res.confirm) {
-            resolve(res.confirm)
+            resolve(true)
+          } else {
+            reject(false)
           }
+        },
+        fail: function() {
+          reject(false)
         }
       })
     })

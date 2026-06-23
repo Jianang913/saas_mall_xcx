@@ -31,7 +31,13 @@
 </template>
 
 <script>
+  import { useUserStore } from '@/store/modules/user'
+
   export default {
+    setup() {
+      const userStore = useUserStore()
+      return { userStore }
+    },
     data() {
       return {
         windowHeight: uni.getSystemInfoSync().windowHeight
@@ -47,11 +53,12 @@
       handleCleanTmp() {
         this.$modal.showToast('模块建设中~')
       },
-      handleLogout() {
-        this.$modal.confirm('确定注销并退出系统吗？').then(() => {
-          this.$store.dispatch('LogOut').then(() => {}).finally(()=>{
-            this.$tab.reLaunch('/pages/index')
-          })
+      async handleLogout() {
+        try {
+          await this.$modal.confirm('确定注销并退出系统吗？')
+        } catch (e) { return }
+        this.userStore.logOut().then(() => {}).finally(() => {
+          this.$tab.reLaunch('/pages/index')
         })
       }
     }

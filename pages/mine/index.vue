@@ -121,8 +121,13 @@
 
 <script>
 import { getOrderNum } from '@/api/mall/order'
+import { useUserStore } from '@/store/modules/user'
 
 export default {
+  setup() {
+    const userStore = useUserStore()
+    return { userStore }
+  },
   data() {
     return {
       orderNum: {
@@ -136,20 +141,17 @@ export default {
   },
   computed: {
     nickname() {
-      return this.$store.getters.name
+      return this.userStore.name
     },
     avatar() {
-      return this.$store.getters.avatar
+      return this.userStore.avatar
     },
     userId() {
-      return this.$store.getters.id
+      return this.userStore.id
     }
   },
   onShow() {
-    // #ifdef MP-WEIXIN
-    uni.hideTabBar({ animation: false })
-    // #endif
-    if (this.$store.getters.token) {
+    if (this.userStore.token) {
       this.loadOrderNum()
     }
   },
@@ -217,7 +219,7 @@ export default {
         success: (res) => {
           const tempFilePath = res.tempFilePaths[0]
           // 这里可以上传到服务器，暂时只本地保存
-          this.$store.commit('SET_AVATAR', tempFilePath)
+          this.userStore.setAvatar(tempFilePath)
           uni.setStorageSync('avatar', tempFilePath)
         }
       })

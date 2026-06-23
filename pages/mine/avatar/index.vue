@@ -107,7 +107,7 @@
 			setData: function (obj) {
 				let that = this
 				Object.keys(obj).forEach(function (key) {
-					that.$set(that.$data, key, obj[key])
+					that[key] = obj[key]
 				})
 			},
 			getImage: function () {

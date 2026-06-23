@@ -1,31 +1,29 @@
-import Vue from 'vue'
+import { createSSRApp } from 'vue'
 import App from './App'
-import store from './store'
+import { pinia } from './store'
 import plugins from './plugins'
 import './permission'
-import { getDicts } from "@/api/system/dict/data"
-
-Vue.use(plugins)
-
-Vue.config.productionTip = false
-Vue.prototype.$store = store
-Vue.prototype.getDicts = getDicts
+import { getDicts } from '@/api/system/dict/data'
 
 // 全局注册组件
 import tabBar from '@/components/tab-bar/tab-bar.vue'
 import loginModal from '@/components/login-modal/login-modal.vue'
-Vue.component('tab-bar', tabBar)
-Vue.component('login-modal', loginModal)
 
-App.mpType = 'app'
+export function createApp() {
+  const app = createSSRApp(App)
 
-const app = new Vue({
-  ...App
-})
+  // 安装插件（$tab/$auth/$modal）
+  app.use(plugins)
 
-app.$mount()
+  // 安装 Pinia
+  app.use(pinia)
 
-// 隐藏原生 Tab 栏
-// #ifdef MP-WEIXIN
-uni.hideTabBar({ animation: false })
-// #endif
+  // 全局属性
+  app.config.globalProperties.getDicts = getDicts
+
+  // 全局组件
+  app.component('tab-bar', tabBar)
+  app.component('login-modal', loginModal)
+
+  return { app }
+}

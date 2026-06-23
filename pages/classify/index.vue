@@ -78,9 +78,6 @@ export default {
     this.loadCategories()
   },
   onShow() {
-    // #ifdef MP-WEIXIN
-    uni.hideTabBar({ animation: false })
-    // #endif
   },
   onPullDownRefresh() {
     this.loadCategories().then(() => {

@@ -52,13 +52,18 @@
 import { getCodeImg } from '@/api/login'
 import { wxPhoneLogin, silentLogin } from '@/api/mall/login'
 import { getToken } from '@/utils/auth'
+import { useUserStore } from '@/store/modules/user'
 
 export default {
+  setup() {
+    const userStore = useUserStore()
+    return { userStore }
+  },
   data() {
     return {
       codeUrl: '',
       captchaEnabled: true,
-      globalConfig: getApp().globalData.config,
+      globalConfig: null,
       appId: '', // 小程序 appId，从 manifest 读取
       loginForm: {
         username: '',
@@ -70,6 +75,8 @@ export default {
     }
   },
   created() {
+    const app = getApp()
+    this.globalConfig = app ? app.globalData.config : {}
     // #ifdef MP-WEIXIN
     // 读取小程序 appId
     const accountInfo = uni.getAccountInfoSync()
@@ -227,9 +234,9 @@ export default {
       }
 
       this.$modal.loading('登录中...')
-      this.$store.dispatch('Login', this.loginForm).then(() => {
+      this.userStore.login(this.loginForm).then(() => {
         this.$modal.closeLoading()
-        this.$store.dispatch('GetInfo').then(() => {
+        this.userStore.getInfo().then(() => {
           this.$tab.reLaunch('/pages/dechome/index')
         })
       }).catch(() => {
@@ -242,12 +249,12 @@ export default {
 
     handlePrivacy() {
       const site = this.globalConfig.appInfo.agreements[0]
-      this.$tab.navigateTo(`/pages/common/webview/index?title=${site.title}&url=${site.url}`)
+      this.$tab.navigateTo('/pages/common/webview/index?title=' + encodeURIComponent(site.title) + '&url=' + encodeURIComponent(site.url))
     },
 
     handleUserAgrement() {
       const site = this.globalConfig.appInfo.agreements[1]
-      this.$tab.navigateTo(`/pages/common/webview/index?title=${site.title}&url=${site.url}`)
+      this.$tab.navigateTo('/pages/common/webview/index?title=' + encodeURIComponent(site.title) + '&url=' + encodeURIComponent(site.url))
     }
   }
 }

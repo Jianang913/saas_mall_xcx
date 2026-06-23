@@ -148,7 +148,9 @@ export default {
       })
     },
     async cancelOrder() {
-      await this.$modal.confirm('确定取消该订单？')
+      try {
+        await this.$modal.confirm('确定取消该订单？')
+      } catch (e) { return }
       try {
         await cancelOrder({ orderId: this.orderId })
         this.$modal.msgSuccess('已取消')
@@ -177,7 +179,9 @@ export default {
       }
     },
     async confirmReceive() {
-      await this.$modal.confirm('确认已收到商品？')
+      try {
+        await this.$modal.confirm('确认已收到商品？')
+      } catch (e) { return }
       try {
         await confirmReceive({ orderId: this.orderId })
         this.$modal.msgSuccess('已确认收货')
@@ -187,7 +191,9 @@ export default {
       }
     },
     async delOrder() {
-      await this.$modal.confirm('确定删除该订单？')
+      try {
+        await this.$modal.confirm('确定删除该订单？')
+      } catch (e) { return }
       try {
         await delOrder(this.orderId)
         this.$modal.msgSuccess('已删除')

@@ -1,5 +1,5 @@
 // 应用全局配置
-module.exports = {
+export default {
   baseUrl: 'http://localhost:8080',
   // imageUrl 用于拼接图片相对路径
   imageUrl: '',

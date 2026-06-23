@@ -189,7 +189,9 @@ export default {
       }
     },
     async onDelete() {
-      await this.$modal.confirm('确定删除该地址？')
+      try {
+        await this.$modal.confirm('确定删除该地址？')
+      } catch (e) { return }
       try {
         await delAddress(this.addressId)
         this.$modal.msgSuccess('已删除')

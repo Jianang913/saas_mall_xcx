@@ -82,7 +82,9 @@ export default {
       this.$tab.navigateTo('/pages/order/afterSale/detail/index?id=' + item.orderAfterId)
     },
     async cancelSale(item) {
-      await this.$modal.confirm('确定取消该售后申请？')
+      try {
+        await this.$modal.confirm('确定取消该售后申请？')
+      } catch (e) { return }
       try {
         await cancelAfterSale({ orderAfterId: item.orderAfterId })
         this.$modal.msgSuccess('已取消')

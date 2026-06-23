@@ -112,7 +112,9 @@ export default {
       uni.setClipboardData({ data: text, success: () => this.$modal.msgSuccess('已复制') })
     },
     async cancelSale() {
-      await this.$modal.confirm('确定取消售后？')
+      try {
+        await this.$modal.confirm('确定取消售后？')
+      } catch (e) { return }
       try {
         await cancelAfterSale({ orderAfterId: this.orderAfterId })
         this.$modal.msgSuccess('已取消')

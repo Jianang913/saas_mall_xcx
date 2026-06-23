@@ -39,7 +39,7 @@ export default {
     this.tick()
     this.timer = setInterval(this.tick, 1000)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.timer) clearInterval(this.timer)
   },
   methods: {

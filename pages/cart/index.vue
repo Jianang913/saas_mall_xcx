@@ -100,9 +100,6 @@ export default {
     }
   },
   onShow() {
-    // #ifdef MP-WEIXIN
-    uni.hideTabBar({ animation: false })
-    // #endif
     this.loadCart()
   },
   onPullDownRefresh() {
@@ -157,7 +154,11 @@ export default {
       if (this.isEdit) {
         // 删除
         const ids = this.checkedList.map(item => item.cartId).join(',')
-        await this.$modal.confirm('确定删除选中的商品？')
+        try {
+          await this.$modal.confirm('确定删除选中的商品？')
+        } catch (e) {
+          return // 用户取消
+        }
         try {
           await delCart({ ids })
           this.$modal.msgSuccess('删除成功')

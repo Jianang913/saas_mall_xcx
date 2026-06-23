@@ -43,7 +43,7 @@
       return {
         codeUrl: "",
         captchaEnabled: true,
-        globalConfig: getApp().globalData.config,
+        globalConfig: null,
         registerForm: {
           username: "",
           password: "",
@@ -54,6 +54,8 @@
       }
     },
     created() {
+      const app = getApp()
+      this.globalConfig = app ? app.globalData.config : {}
       this.getCode()
     },
     methods: {

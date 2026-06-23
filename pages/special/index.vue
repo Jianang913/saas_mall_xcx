@@ -80,11 +80,6 @@ export default {
     }
   },
   async onShow() {
-    // 隐藏原生 Tab 栏
-    // #ifdef MP-WEIXIN
-    uni.hideTabBar({ animation: false })
-    // #endif
-
     await this.loadPage()
   },
   onLoad() {
@@ -142,7 +137,6 @@ export default {
 
     switchClassify(item) {
       this.currentClassifyId = item.specialGoodsClassifyId
-      this.page = 1
       this.page = 1
       this.goodsList = []
       this.noMore = false

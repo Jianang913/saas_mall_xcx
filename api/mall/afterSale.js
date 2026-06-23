@@ -43,3 +43,11 @@ export function addRefundCourier(data) {
     data
   })
 }
+
+// 获取退货地址
+export function getAfterSaleAddress(addressId) {
+  return request({
+    url: '/mobile/afterSale/address/' + addressId,
+    method: 'get'
+  })
+}

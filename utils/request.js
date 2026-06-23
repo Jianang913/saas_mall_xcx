@@ -1,4 +1,4 @@
-import store from '@/store'
+import { useUserStore } from '@/store/modules/user'
 import config from '@/config'
 import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
@@ -8,15 +8,15 @@ let timeout = 15000
 const baseUrl = config.baseUrl
 
 const request = config => {
-  // 是否需要设置 token
-  const isToken = (config.headers || {}).isToken === false
+  // 是否需要设置 token（headers.isToken === false 表示不需要）
+  const noToken = (config.headers || {}).isToken === false
   config.header = config.header || {}
 
   // 商城自定义 Headers
   const app = getApp()
   const globalData = app ? app.globalData : {}
 
-  if (getToken() && !isToken) {
+  if (getToken() && !noToken) {
     config.header['Authorization'] = 'Bearer ' + getToken()
   }
 
@@ -43,14 +43,15 @@ const request = config => {
       header: config.header,
       dataType: 'json'
     }).then(response => {
-      let [error, res] = response
-      if (error) {
+      // Vue 3: response 直接是 res 对象；Vue 2: [error, res] 数组
+      let res = Array.isArray(response) ? response[1] : response
+      if (!res) {
         toast('后端接口连接异常')
         reject('后端接口连接异常')
         return
       }
 
-      const code = res.data.code || 200
+      const code = res.data.code !== undefined && res.data.code !== null ? res.data.code : 200
       const msg = errorCode[code] || res.data.msg || errorCode['default']
 
       if (code === 401) {
@@ -62,18 +63,22 @@ const request = config => {
         // 已登录但 token 过期，弹提示
         showConfirm('登录状态已过期，您可以继续留在该页面，或者重新登录?').then(res => {
           if (res.confirm) {
-            store.dispatch('LogOut').then(res => {
+            const userStore = useUserStore()
+            userStore.logOut().then(() => {
               uni.reLaunch({ url: '/pages/login' })
             })
           }
         })
         reject('无效的会话，或者会话已过期，请重新登录。')
+        return
       } else if (code === 500) {
         toast(msg)
         reject('500')
+        return
       } else if (code !== 200) {
         toast(msg)
         reject(code)
+        return
       }
 
       // 兼容旧项目：检查 header 中的 newToken
@@ -83,13 +88,20 @@ const request = config => {
 
       resolve(res.data)
     }).catch(error => {
-      let { message } = error
-      if (message === 'Network Error') {
-        message = '后端接口连接异常'
-      } else if (message.includes('timeout')) {
-        message = '系统接口请求超时'
-      } else if (message.includes('Request failed with status code')) {
-        message = '系统接口' + message.slice(-3) + '异常'
+      let message = ''
+      if (error && error.errMsg) {
+        // uni.request 返回的错误格式
+        if (error.errMsg.includes('timeout')) {
+          message = '系统接口请求超时'
+        } else if (error.errMsg.includes('fail')) {
+          message = '后端接口连接异常'
+        } else {
+          message = error.errMsg
+        }
+      } else if (error && error.message) {
+        message = error.message
+      } else {
+        message = '系统未知错误'
       }
       toast(message)
       reject(error)

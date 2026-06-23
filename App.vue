@@ -244,7 +244,7 @@ export default {
     dict: {},
     loginReady: false,
     tabBar: { list: [] },
-    shopImg: 'http://localhost:8080',
+    shopImg: config.baseUrl || '',
     appId: '',
     openId: '',
     userId: ''
