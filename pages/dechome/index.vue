@@ -43,6 +43,8 @@
         <brand-module v-if="module.moduleId == 20" :data="module" />
         <!-- moduleId=21: 大屏轮播 -->
         <full-screen-module v-if="module.moduleId == 21" :data="module" />
+        <!-- moduleId=22: 名片模块 -->
+        <card-module v-if="module.moduleId == 22" :data="module" />
       </block>
 
       <uni-load-more v-if="!loading && !moduleList.length" status="noData" />
@@ -70,12 +72,13 @@ import CountdownModule from './components/countdownModule.vue'
 import ContactModule from './components/contactModule.vue'
 import BrandModule from './components/brandModule.vue'
 import FullScreenModule from './components/fullScreenModule.vue'
+import CardModule from './components/cardModule.vue'
 import { getAdornPageData } from '@/api/mall/home'
 
 export default {
   components: {
     SwiperModule, DiamondNav, PicModule, ShopModule, LineModule, TitleModule, NoticeModule,
-    SearchModule, VideoModule, GoodsGroupModule, CountdownModule, ContactModule, BrandModule, FullScreenModule
+    SearchModule, VideoModule, GoodsGroupModule, CountdownModule, ContactModule, BrandModule, FullScreenModule, CardModule
   },
   data() {
     return {

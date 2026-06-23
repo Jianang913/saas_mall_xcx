@@ -126,6 +126,18 @@
     "style": {
       "navigationBarTitleText": "浏览网页"
     }
+  }, {
+    "path": "pages/card/index",
+    "style": {
+      "navigationBarTitleText": "名片",
+      "navigationStyle": "custom"
+    }
+  }, {
+    "path": "pages/card/qrcode",
+    "style": {
+      "navigationBarTitleText": "名片二维码",
+      "navigationStyle": "custom"
+    }
   }],
   "tabBar": {
     "custom": true,
