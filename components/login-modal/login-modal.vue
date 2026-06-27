@@ -101,7 +101,7 @@ export default {
         const app = getApp()
         const res = await wxPhoneLogin({
           code: this.wxCode,
-          phoneCode: e.detail.code,
+          phoneCode: e.detail.code,  // 新版本
           appId: app.globalData.appId
         })
 
@@ -122,11 +122,9 @@ export default {
 
     // 登录成功
     handleLoginSuccess(data) {
-      uni.setStorageSync('App-Token', data.token)
-      if (data.openId) uni.setStorageSync('xcxOpenId', data.openId)
-      if (data.userId) uni.setStorageSync('userId', data.userId)
-      if (data.nickname) uni.setStorageSync('nickname', data.nickname)
-      if (data.tenantId) uni.setStorageSync('tenantId', data.tenantId)
+      // 系统登录接口返回格式：access_token, expire_in, client_id, openid
+      uni.setStorageSync('App-Token', data.access_token)
+      if (data.openid) uni.setStorageSync('xcxOpenId', data.openid)
 
       this.visible = false
       this.$modal.msgSuccess('登录成功')

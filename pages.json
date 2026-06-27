@@ -37,6 +37,12 @@
       "navigationBarTitleText": "注册"
     }
   }, {
+    "path": "pages/goods/list/index",
+    "style": {
+      "navigationBarTitleText": "商品列表",
+      "navigationStyle": "custom"
+    }
+  }, {
     "path": "pages/goods/detail/index",
     "style": {
       "navigationBarTitleText": "商品详情"

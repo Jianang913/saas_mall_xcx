@@ -10,7 +10,7 @@
       >
         <image
           class="tab-icon"
-          :src="item.selected ? item.iconOneUrl : item.iconTwoUrl"
+          :src="item.selected ? item.iconTwoUrl : item.iconOneUrl"
           mode="aspectFit"
         />
         <text class="tab-text" :class="{ active: item.selected }">
@@ -81,12 +81,16 @@ export default {
       this.tabList.forEach(tab => {
         tab.selected = false
         const tabPath = tab.pagePath || ''
-        if (tab.linkType === 0) {
+        // 去掉查询参数再比较
+        const tabBasePath = tabPath.split('?')[0]
+        const linkType = String(tab.linkType)
+
+        if (linkType === '0') {
           // 系统页面：pagePath 匹配
-          tab.selected = tabPath === currentRoute
-        } else if (tab.linkType === 1 || tab.linkType === 2) {
+          tab.selected = tabBasePath === currentRoute
+        } else if (linkType === '1' || linkType === '2') {
           // 专题页/装修页：路径匹配 + specialId 匹配
-          tab.selected = (tabPath === currentRoute) && (specialId == tab.linkUrlId)
+          tab.selected = (tabBasePath === currentRoute) && (String(specialId) === String(tab.linkUrlId))
         }
       })
     },
@@ -145,9 +149,8 @@ export default {
 }
 
 .tab-bar-placeholder {
-  height: 100rpx;
-  padding-bottom: constant(safe-area-inset-bottom);
-  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(100rpx + constant(safe-area-inset-bottom));
+  height: calc(100rpx + env(safe-area-inset-bottom));
 }
 
 .tab-bar-content {
@@ -157,6 +160,7 @@ export default {
   box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
+  box-sizing: content-box;
 }
 
 .tab-item {

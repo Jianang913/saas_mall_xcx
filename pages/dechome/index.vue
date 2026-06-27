@@ -20,7 +20,7 @@
         <!-- moduleId=2: 轮播图 -->
         <swiper-module v-if="module.moduleId == 2" :data="module" />
         <!-- moduleId=3: 金刚位 -->
-        <diamond-nav v-if="module.moduleId == 3" :data="module" />
+        <diamond-nav v-if="module.moduleId == 3" :data="module" :merge-top="isSameAsPrev(module, index)" :merge-bottom="isSameAsNext(module, index)" />
         <!-- moduleId=4: 图片模块 -->
         <pic-module v-if="module.moduleId == 4" :data="module" />
         <!-- moduleId=5: 商品模块 -->
@@ -144,6 +144,16 @@ export default {
 
     goGoodsDetail(goodsId) {
       this.$tab.navigateTo('/pages/goods/detail/index?id=' + goodsId)
+    },
+
+    isSameAsPrev(module, index) {
+      const prevModule = index > 0 ? this.moduleList[index - 1] : null
+      return prevModule && prevModule.moduleId === module.moduleId
+    },
+
+    isSameAsNext(module, index) {
+      const nextModule = index < this.moduleList.length - 1 ? this.moduleList[index + 1] : null
+      return nextModule && nextModule.moduleId === module.moduleId
     }
   }
 }

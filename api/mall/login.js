@@ -3,9 +3,17 @@ import request from '@/utils/request'
 // 微信手机号快捷登录
 export function wxPhoneLogin(data) {
   return request({
-    url: '/mobile/login/wxPhoneLogin',
+    url: '/auth/login',
     method: 'post',
-    data,
+    data: {
+      clientId: data.appId,
+      grantType: 'xcxServiceProvider',
+      appId: data.appId,
+      code: data.code,
+      phoneCode: data.phoneCode,  // 新版本
+      nickname: data.nickname,
+      portrait: data.portrait
+    },
     headers: { isToken: false }
   })
 }
@@ -13,9 +21,14 @@ export function wxPhoneLogin(data) {
 // 静默登录（访客模式）
 export function silentLogin(data) {
   return request({
-    url: '/mobile/login/silentLogin',
+    url: '/auth/login',
     method: 'post',
-    data,
+    data: {
+      clientId: data.appId,
+      grantType: 'xcxServiceProvider',
+      appId: data.appId,
+      code: data.code
+    },
     headers: { isToken: false }
   })
 }

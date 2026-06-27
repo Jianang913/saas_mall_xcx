@@ -9,44 +9,48 @@
     </view>
 
     <view class="classify-content">
-      <!-- 左侧分类 Tab -->
+      <!-- 左侧一级分类 Tab -->
       <scroll-view scroll-y class="left-nav">
         <view
           class="nav-item"
           :class="{ active: currentIdx === index }"
           v-for="(cat, index) in categoryList"
-          :key="cat.catId"
+          :key="cat.goodsCatId"
           @click="switchCat(index)"
         >
-          <text>{{ cat.catName }}</text>
+          <text>{{ cat.alias || cat.catName }}</text>
         </view>
       </scroll-view>
 
-      <!-- 右侧子分类 -->
-      <scroll-view scroll-y class="right-content">
-        <!-- 分类 Banner -->
-        <image
-          v-if="currentCat && currentCat.catPic"
-          class="cat-banner"
-          :src="currentCat.catPic"
-          mode="widthFix"
-        />
+      <!-- 右侧二级分类 -->
+      <scroll-view scroll-y class="mid-nav">
+        <view
+          class="mid-item"
+          :class="{ active: currentMidIdx === index }"
+          v-for="(sub, index) in subCatList"
+          :key="sub.goodsCatId"
+          @click="switchMidCat(index)"
+        >
+          <text>{{ sub.alias || sub.catName }}</text>
+        </view>
+      </scroll-view>
 
-        <!-- 子分类网格 -->
+      <!-- 右侧三级分类网格 -->
+      <scroll-view scroll-y class="right-content">
         <view class="sub-cat-grid">
           <view
             class="sub-cat-item"
-            v-for="sub in subCatList"
-            :key="sub.catId"
-            @click="goGoodsList(sub)"
+            v-for="third in thirdCatList"
+            :key="third.goodsCatId"
+            @click="goGoodsList(third)"
           >
-            <image class="sub-cat-icon" :src="sub.catPic" mode="aspectFit" />
-            <text class="sub-cat-name">{{ sub.catName }}</text>
+            <image class="sub-cat-icon" :src="getImgUrl(third.catPic)" mode="aspectFit" />
+            <text class="sub-cat-name">{{ third.alias || third.catName }}</text>
           </view>
         </view>
 
         <!-- 空状态 -->
-        <uni-load-more v-if="!subCatList.length && categoryList.length" status="noData" />
+        <uni-load-more v-if="!thirdCatList.length && subCatList.length" status="noData" />
       </scroll-view>
     </view>
 
@@ -57,12 +61,14 @@
 
 <script>
 import { listGoodsCat } from '@/api/mall/goods'
+import config from '@/config'
 
 export default {
   data() {
     return {
       categoryList: [],
-      currentIdx: 0
+      currentIdx: 0,
+      currentMidIdx: 0
     }
   },
   computed: {
@@ -72,6 +78,11 @@ export default {
     subCatList() {
       if (!this.currentCat) return []
       return this.currentCat.children || []
+    },
+    thirdCatList() {
+      if (!this.subCatList.length) return []
+      const currentSub = this.subCatList[this.currentMidIdx]
+      return currentSub ? currentSub.children || [] : []
     }
   },
   onLoad() {
@@ -87,38 +98,32 @@ export default {
   methods: {
     async loadCategories() {
       try {
-        const res = await listGoodsCat({ pageSize: 200 })
-        if (res.rows) {
-          // 构建树形结构
-          this.categoryList = this.buildTree(res.rows)
+        const res = await listGoodsCat()
+        if (res.code === 200 && res.data) {
+          // 后端已经返回树形结构，直接使用
+          this.categoryList = res.data
         }
       } catch (e) {
         console.error('加载分类失败', e)
       }
     },
-    buildTree(list) {
-      const map = {}
-      const tree = []
-      list.forEach(item => {
-        map[item.catId] = { ...item, children: [] }
-      })
-      list.forEach(item => {
-        if (item.parentId && map[item.parentId]) {
-          map[item.parentId].children.push(map[item.catId])
-        } else if (!item.parentId || item.parentId === 0) {
-          tree.push(map[item.catId])
-        }
-      })
-      return tree
-    },
     switchCat(index) {
       this.currentIdx = index
+      this.currentMidIdx = 0
+    },
+    switchMidCat(index) {
+      this.currentMidIdx = index
+    },
+    getImgUrl(pic) {
+      if (!pic) return ''
+      if (pic.startsWith('http')) return pic
+      return config.baseUrl + '/resource/oss/download/' + pic
     },
     goSearch() {
       this.$tab.navigateTo('/pages/search/index')
     },
-    goGoodsList(sub) {
-      this.$tab.navigateTo('/pages/search/index?catId=' + sub.catId + '&catName=' + sub.catName)
+    goGoodsList(third) {
+      this.$tab.navigateTo('/pages/goods/list/index?catId=' + third.goodsCatId + '&catName=' + (third.alias || third.catName))
     }
   }
 }
@@ -160,7 +165,7 @@ export default {
 }
 
 .left-nav {
-  width: 180rpx;
+  width: 160rpx;
   background-color: #f5f5f5;
   height: 100%;
 }
@@ -193,16 +198,30 @@ export default {
   border-radius: 0 3rpx 3rpx 0;
 }
 
+.mid-nav {
+  width: 160rpx;
+  background-color: #fafafa;
+  height: 100%;
+}
+
+.mid-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.mid-item.active {
+  color: #f2b974;
+  font-weight: bold;
+}
+
 .right-content {
   flex: 1;
   padding: 20rpx;
   height: 100%;
-}
-
-.cat-banner {
-  width: 100%;
-  border-radius: 12rpx;
-  margin-bottom: 20rpx;
 }
 
 .sub-cat-grid {

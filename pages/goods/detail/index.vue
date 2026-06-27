@@ -14,7 +14,7 @@
         <text class="market-price" v-if="goods.marketPrice">¥{{ goods.marketPrice }}</text>
       </view>
       <text class="goods-title">{{ goods.goodsName }}</text>
-      <text class="goods-subtitle" v-if="goods.subtitle">{{ goods.subtitle }}</text>
+      <text class="goods-subtitle" v-if="goods.goodsBrief">{{ goods.goodsBrief }}</text>
     </view>
 
     <!-- SKU 选择 -->
@@ -29,12 +29,12 @@
       <view class="section-title">
         <text>商品详情</text>
       </view>
-      <rich-text class="detail-content" :nodes="goods.details || ''"></rich-text>
+      <rich-text class="detail-content" :nodes="formatDetailContent(goods.detailDesc || goods.goodsDesc || '')"></rich-text>
     </view>
 
     <!-- SKU 选择弹窗 -->
-    <view class="sku-modal" v-if="showSkuModal" @click.self="showSkuModal = false">
-      <view class="sku-modal-content">
+    <view class="sku-modal" v-if="showSkuModal" @click="showSkuModal = false">
+      <view class="sku-modal-content" @click.stop>
         <!-- 商品简要信息 -->
         <view class="sku-header">
           <image class="sku-goods-image" :src="selectedSkuImage || goodsImages[0]" mode="aspectFill" />
@@ -93,28 +93,31 @@
 
     <!-- 底部操作栏 -->
     <view class="bottom-bar">
-      <view class="bar-left">
-        <view class="bar-item" @click="goHome">
-          <text class="cuIcon-home"></text>
-          <text class="bar-item-text">首页</text>
+      <view class="bar-content">
+        <view class="bar-left">
+          <view class="bar-item" @click="goHome">
+            <text class="cuIcon-home"></text>
+            <text class="bar-item-text">首页</text>
+          </view>
+          <view class="bar-item" @click="toggleCollect">
+            <text :class="isCollected ? 'cuIcon-likefill' : 'cuIcon-like'" :style="{ color: isCollected ? '#e4393c' : '' }"></text>
+            <text class="bar-item-text">收藏</text>
+          </view>
+          <view class="bar-item" @click="goCart">
+            <text class="cuIcon-cart"></text>
+            <text class="bar-item-text">购物车</text>
+          </view>
         </view>
-        <view class="bar-item" @click="toggleCollect">
-          <text :class="isCollected ? 'cuIcon-likefill' : 'cuIcon-like'" :style="{ color: isCollected ? '#e4393c' : '' }"></text>
-          <text class="bar-item-text">收藏</text>
-        </view>
-        <view class="bar-item" @click="goCart">
-          <text class="cuIcon-cart"></text>
-          <text class="bar-item-text">购物车</text>
+        <view class="bar-right">
+          <view class="bar-btn btn-cart" @click="showSkuModal = true; actionType = 'cart'">
+            <text>加入购物车</text>
+          </view>
+          <view class="bar-btn btn-buy" @click="showSkuModal = true; actionType = 'buy'">
+            <text>立即购买</text>
+          </view>
         </view>
       </view>
-      <view class="bar-right">
-        <view class="bar-btn btn-cart" @click="showSkuModal = true; actionType = 'cart'">
-          <text>加入购物车</text>
-        </view>
-        <view class="bar-btn btn-buy" @click="showSkuModal = true; actionType = 'buy'">
-          <text>立即购买</text>
-        </view>
-      </view>
+      <view class="bar-safe-area"></view>
     </view>
 
     <!-- 登录弹窗 -->
@@ -146,16 +149,20 @@ export default {
     currentPrice() {
       if (!this.skuList.length) return this.goods ? this.goods.shopPrice : 0
       const sku = this.findMatchSku()
-      return sku ? sku.price : (this.goods ? this.goods.shopPrice : 0)
+      return sku ? sku.shopPrice : (this.goods ? this.goods.shopPrice : 0)
     },
     currentStock() {
-      if (!this.skuList.length) return this.goods ? this.goods.stock : 0
+      if (!this.skuList.length) return this.goods ? this.goods.goodsNumber : 0
       const sku = this.findMatchSku()
-      return sku ? sku.stock : 0
+      return sku ? sku.speNumber : 0
     },
     selectedSkuImage() {
       const sku = this.findMatchSku()
-      return sku ? sku.image : ''
+      if (!sku || !sku.spePic) return ''
+      const pic = sku.spePic
+      if (pic.startsWith('http')) return pic
+      const app = getApp()
+      return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
     },
     selectedSkuText() {
       const values = Object.values(this.selectedSpecs).filter(v => v)
@@ -166,7 +173,6 @@ export default {
     if (options.id) {
       this.goodsId = options.id
       this.loadGoods()
-      this.loadSpecs()
     }
   },
   methods: {
@@ -174,46 +180,60 @@ export default {
       try {
         const res = await getGoods(this.goodsId)
         if (res.data) {
-          this.goods = res.data
-          // 解析商品图片
-          if (this.goods.goodsImage) {
-            this.goodsImages = this.goods.goodsImage.split(',').filter(Boolean)
+          // 后端返回 { goods: {...}, specList: [...] }
+          this.goods = res.data.goods || res.data
+          this.skuList = res.data.specList || []
+          // 解析商品图片（后端字段是 headPic，存储的是 OSS ID）
+          if (this.goods.headPic) {
+            const app = getApp()
+            const baseUrl = app.globalData.shopImg || ''
+            this.goodsImages = this.goods.headPic.split(',')
+              .filter(Boolean)
+              .map(pic => {
+                if (pic.startsWith('http')) return pic
+                return baseUrl + '/resource/oss/download/' + pic
+              })
+          }
+          // 构建规格组
+          if (this.skuList.length) {
+            this.buildSpecGroups()
+            // 默认选中每个规格组的第一个值
+            this.specGroups.forEach(group => {
+              if (group.values.length) {
+                group.selectedValue = group.values[0].attrValueId
+                this.selectedSpecs[group.attrName] = group.values[0].attrValue
+              }
+            })
           }
         }
       } catch (e) {
         console.error('加载商品失败', e)
       }
     },
-    async loadSpecs() {
-      try {
-        const res = await listGoodsSpe({ goodsId: this.goodsId })
-        if (res.rows) {
-          this.skuList = res.rows
-          this.buildSpecGroups()
-        }
-      } catch (e) {
-        console.error('加载规格失败', e)
-      }
-    },
     buildSpecGroups() {
       const groupMap = {}
       this.skuList.forEach(sku => {
-        if (sku.attrList) {
-          sku.attrList.forEach(attr => {
-            if (!groupMap[attr.attrId]) {
-              groupMap[attr.attrId] = {
-                attrId: attr.attrId,
-                attrName: attr.attrName,
+        // 后端返回 attrValues 字符串，格式如 "600,蓝"（逗号分隔的属性值）
+        if (sku.attrValues) {
+          const values = sku.attrValues.split(',').map(v => v.trim())
+          values.forEach((attrValue, index) => {
+            const attrId = 'attr_' + index
+            const attrName = '规格' + (index + 1)
+
+            if (!groupMap[attrId]) {
+              groupMap[attrId] = {
+                attrId: attrId,
+                attrName: attrName,
                 selectedValue: null,
                 values: []
               }
             }
-            const group = groupMap[attr.attrId]
-            const exists = group.values.some(v => v.attrValueId === attr.attrValueId)
+            const group = groupMap[attrId]
+            const exists = group.values.some(v => v.attrValue === attrValue)
             if (!exists) {
               group.values.push({
-                attrValueId: attr.attrValueId,
-                attrValue: attr.attrValue
+                attrValueId: attrId + '_' + attrValue,
+                attrValue: attrValue
               })
             }
           })
@@ -224,19 +244,25 @@ export default {
     selectSpec(group, value) {
       group.selectedValue = value.attrValueId
       this.selectedSpecs[group.attrName] = value.attrValue
-      this.$forceUpdate()
     },
     findMatchSku() {
       if (!this.specGroups.length) return null
-      const selectedIds = {}
-      this.specGroups.forEach(g => {
-        if (g.selectedValue) {
-          selectedIds[g.attrId] = g.selectedValue
-        }
+      // 检查是否所有规格组都已选择
+      const allSelected = this.specGroups.every(g => g.selectedValue)
+      if (!allSelected) return null
+
+      // 构建选中的规格值列表
+      const selectedValues = this.specGroups.map(g => {
+        const val = g.values.find(v => v.attrValueId === g.selectedValue)
+        return val ? val.attrValue : ''
       })
+
+      // 查找匹配的 SKU
       return this.skuList.find(sku => {
-        if (!sku.attrList) return false
-        return sku.attrList.every(attr => selectedIds[attr.attrId] === attr.attrValueId)
+        if (!sku.attrValues) return false
+        const skuValues = sku.attrValues.split(',').map(v => v.trim())
+        return skuValues.length === selectedValues.length &&
+          skuValues.every((v, i) => v === selectedValues[i])
       })
     },
     previewImage(index) {
@@ -287,7 +313,7 @@ export default {
         quantity: this.buyNum,
         price: this.currentPrice,
         goodsName: this.goods.goodsName,
-        goodsImage: this.goodsImages[0],
+        goodsImage: this.goodsImages[0] || this.goods.headPic,
         specValues: this.selectedSkuText
       }]
       uni.setStorageSync('carts', JSON.stringify(orderGoods))
@@ -320,6 +346,12 @@ export default {
     },
     goCart() {
       this.$tab.switchTab('/pages/cart/index')
+    },
+    // 格式化详情内容，给图片添加样式限制
+    formatDetailContent(html) {
+      if (!html) return ''
+      // 给 img 标签添加样式限制宽度
+      return html.replace(/<img /g, '<img style="max-width:100%;height:auto;" ')
     }
   }
 }
@@ -327,7 +359,7 @@ export default {
 
 <style lang="scss" scoped>
 .goods-detail {
-  padding-bottom: 120rpx;
+  padding-bottom: 180rpx;
   background-color: #f5f5f5;
 }
 
@@ -417,6 +449,33 @@ export default {
 .detail-content {
   font-size: 28rpx;
   line-height: 1.8;
+  overflow: hidden;
+  word-break: break-all;
+
+  // 富文本中的图片限制宽度
+  :deep(img) {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  :deep(image) {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  // 富文本中的视频限制宽度
+  :deep(video) {
+    max-width: 100% !important;
+  }
+
+  // 富文本中的表格限制宽度
+  :deep(table) {
+    width: 100% !important;
+  }
+
+  :deep(td) {
+    word-break: break-all;
+  }
 }
 
 // SKU 弹窗
@@ -585,12 +644,22 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 100rpx;
   background-color: #fff;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
   z-index: 100;
+}
+
+.bar-content {
+  display: flex;
+  align-items: center;
+  height: 100rpx;
+}
+
+.bar-safe-area {
+  height: constant(safe-area-inset-bottom);
+  height: env(safe-area-inset-bottom);
 }
 
 .bar-left {

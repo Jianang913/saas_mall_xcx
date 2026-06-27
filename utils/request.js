@@ -3,6 +3,7 @@ import config from '@/config'
 import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { toast, showConfirm, tansParams } from '@/utils/common'
+import { encryptRequest, needEncrypt } from '@/utils/crypto'
 
 let timeout = 15000
 const baseUrl = config.baseUrl
@@ -22,10 +23,18 @@ const request = config => {
 
   // 附加商城业务 Headers
   config.header['openId'] = uni.getStorageSync('xcxOpenId') || ''
-  config.header['appId'] = globalData.appId || ''
+  config.header['appId'] = globalData.appId || uni.getStorageSync('appId') || ''
+  config.header['clientid'] = globalData.appId || uni.getStorageSync('appId') || ''  // 用于 Sa-Token 校验（小写）
   config.header['sUserId'] = uni.getStorageSync('userId') || ''
   config.header['shareOpenId'] = uni.getStorageSync('shareOpenId') || ''
   config.header['iType'] = uni.getStorageSync('iType') || ''
+
+  // 请求加密处理
+  if (needEncrypt(config.url) && (config.method === 'post' || config.method === 'put')) {
+    const { encryptedData, encryptKey } = encryptRequest(config.data)
+    config.data = encryptedData
+    config.header['encrypt-key'] = encryptKey
+  }
 
   // get请求映射params参数
   if (config.params) {
@@ -34,11 +43,14 @@ const request = config => {
     config.url = url
   }
 
+  // 构建完整 URL
+  const url = config.baseUrl || baseUrl + config.url
+
   return new Promise((resolve, reject) => {
     uni.request({
       method: config.method || 'get',
       timeout: config.timeout || timeout,
-      url: config.baseUrl || baseUrl + config.url,
+      url: url,
       data: config.data,
       header: config.header,
       dataType: 'json'

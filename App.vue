@@ -19,6 +19,9 @@ export default {
       this.initSystemInfo()
       this.initShareParams(options)
 
+      // 确保 appId 已初始化后再发起请求
+      console.log('appId:', this.globalData.appId)
+
       // 获取导航配置（不依赖登录）
       this.loadNavigation()
 
@@ -46,8 +49,16 @@ export default {
       }
 
       // 读取小程序 appId
-      const accountInfo = uni.getAccountInfoSync()
-      this.globalData.appId = accountInfo.miniProgram.appId
+      try {
+        const accountInfo = uni.getAccountInfoSync()
+        if (accountInfo && accountInfo.miniProgram) {
+          this.globalData.appId = accountInfo.miniProgram.appId || ''
+          uni.setStorageSync('appId', this.globalData.appId)
+        }
+      } catch (e) {
+        console.warn('获取appId失败:', e)
+      }
+      console.log('appId:', this.globalData.appId)
       // #endif
     },
 
@@ -173,15 +184,15 @@ export default {
         })
 
         if (res.code === 200 && res.data) {
-          const { token, openId, userId, tenantId } = res.data
-          uni.setStorageSync('App-Token', token)
-          if (openId) uni.setStorageSync('xcxOpenId', openId)
-          if (userId) uni.setStorageSync('userId', userId)
-          if (tenantId) uni.setStorageSync('tenantId', tenantId)
+          // 系统登录接口返回格式：access_token, expire_in, client_id, openid
+          const { access_token, openid } = res.data
+          uni.setStorageSync('App-Token', access_token)
+          if (openid) uni.setStorageSync('xcxOpenId', openid)
           this.globalData.loginReady = true
           console.log('静默登录成功')
         }
       } catch (e) {
+        //TODO 这个失败的以后要处理掉，要不查的是全量数据没有租户id
         console.warn('静默登录失败（不影响浏览）', e)
       }
       // #endif
