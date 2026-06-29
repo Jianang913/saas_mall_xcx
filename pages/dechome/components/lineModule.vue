@@ -1,8 +1,27 @@
 <template>
   <view class="line-module">
     <view class="line-container" :style="containerStyle">
-      <view v-if="lineType === '1'" class="line-solid"></view>
-      <view v-else-if="lineType === '2'" class="line-dashed"></view>
+      <!-- 实线 -->
+      <template v-if="lineType === '1'">
+        <view v-if="text" class="line-with-text">
+          <view class="line-text-line" :style="'background:' + lineColor"></view>
+          <text class="line-text-content" :style="textStyle">{{ text }}</text>
+          <view class="line-text-line" :style="'background:' + lineColor"></view>
+        </view>
+        <view v-else class="line-solid" :style="'background:' + lineColor"></view>
+      </template>
+
+      <!-- 虚线 -->
+      <template v-else-if="lineType === '2'">
+        <view v-if="text" class="line-with-text">
+          <view class="line-text-line dashed" :style="'border-color:' + lineColor"></view>
+          <text class="line-text-content" :style="textStyle">{{ text }}</text>
+          <view class="line-text-line dashed" :style="'border-color:' + lineColor"></view>
+        </view>
+        <view v-else class="line-dashed" :style="'border-color:' + lineColor"></view>
+      </template>
+
+      <!-- 留白 -->
       <view v-else class="line-blank"></view>
     </view>
   </view>
@@ -27,17 +46,18 @@ export default {
       return style
     },
     lineType() {
-      // 新格式: lineType (1=实线 2=虚线 3=留白)
-      // 旧格式: 无 lineType，根据 blankSpace 判断
       if (this.styleData.lineType) return this.styleData.lineType
       if (this.data.show && this.data.show !== '0') return this.data.show
-      // 旧数据有 blankSpace 时视为留白
       if (this.styleData.blankSpace) return '3'
       return '3'
     },
+    text() {
+      return this.styleData.text || ''
+    },
+    lineColor() {
+      return this.styleData.lineColor || '#e8e8e8'
+    },
     containerStyle() {
-      // 新格式: height + bgColor (height 单位为 rpx)
-      // 旧格式: blankSpace + bkColor (blankSpace 需要乘 2 转 rpx)
       let h
       if (this.styleData.height) {
         h = this.styleData.height
@@ -47,8 +67,12 @@ export default {
         h = 20
       }
       const bg = this.styleData.bgColor || this.styleData.bkColor || '#ffffff'
-      // uni-app 内联样式必须用 kebab-case
       return 'padding:' + h + 'rpx 0;background-color:' + bg + ';'
+    },
+    textStyle() {
+      const color = this.styleData.textColor || '#999999'
+      const size = (this.styleData.textSize || 12) * 2 + 'rpx'
+      return 'color:' + color + ';font-size:' + size + ';'
     }
   }
 }
@@ -65,15 +89,36 @@ export default {
 
 .line-solid {
   height: 2rpx;
-  background: #e8e8e8;
 }
 
 .line-dashed {
-  height: 1rpx;
-  border-top: 1rpx dashed #e8e8e8;
+  height: 0;
+  border-top: 1rpx dashed;
 }
 
 .line-blank {
   height: 20rpx;
+}
+
+.line-with-text {
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+}
+
+.line-text-line {
+  flex: 1;
+  height: 2rpx;
+
+  &.dashed {
+    border-top: 1rpx dashed;
+    height: 0;
+  }
+}
+
+.line-text-content {
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 0 24rpx;
 }
 </style>
