@@ -61,14 +61,15 @@
 
 <script>
 import { listGoodsCat } from '@/api/mall/goods'
-import config from '@/config'
+import { resolveOssUrls } from '@/utils/oss'
 
 export default {
   data() {
     return {
       categoryList: [],
       currentIdx: 0,
-      currentMidIdx: 0
+      currentMidIdx: 0,
+      urlCache: new Map()
     }
   },
   computed: {
@@ -102,6 +103,8 @@ export default {
         if (res.code === 200 && res.data) {
           // 后端已经返回树形结构，直接使用
           this.categoryList = res.data
+          // 解析所有分类图片
+          this.resolveCategoryImages(res.data)
         }
       } catch (e) {
         console.error('加载分类失败', e)
@@ -114,10 +117,23 @@ export default {
     switchMidCat(index) {
       this.currentMidIdx = index
     },
+    async resolveCategoryImages(list) {
+      // 递归收集所有分类的图片ID
+      const collectPics = (items) => {
+        let pics = []
+        for (const item of items) {
+          if (item.catPic && !item.catPic.startsWith('http')) pics.push(item.catPic)
+          if (item.children) pics = pics.concat(collectPics(item.children))
+        }
+        return pics
+      }
+      const picIds = collectPics(list).join(',')
+      if (picIds) this.urlCache = await resolveOssUrls(picIds)
+    },
     getImgUrl(pic) {
       if (!pic) return ''
       if (pic.startsWith('http')) return pic
-      return config.baseUrl + '/resource/oss/download/' + pic
+      return this.urlCache.get(pic) || ''
     },
     goSearch() {
       this.$tab.navigateTo('/pages/search/index')

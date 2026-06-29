@@ -20,10 +20,15 @@
 </template>
 
 <script>
+import { resolveOssUrls } from '@/utils/oss'
+
 export default {
   name: 'VideoModule',
   props: {
     data: { type: Object, default: () => ({}) }
+  },
+  data() {
+    return { urlCache: new Map() }
   },
   computed: {
     pageContent() {
@@ -36,15 +41,25 @@ export default {
       const v = this.pageContent.video
       if (!v) return ''
       if (v.startsWith('http')) return v
-      const app = getApp()
-      return (app.globalData.shopImg || '') + '/resource/oss/download/' + v
+      return this.urlCache.get(v) || ''
     },
     posterUrl() {
       const p = this.pageContent.videoPic
       if (!p) return ''
       if (p.startsWith('http')) return p
-      const app = getApp()
-      return (app.globalData.shopImg || '') + '/resource/oss/download/' + p
+      return this.urlCache.get(p) || ''
+    }
+  },
+  watch: {
+    pageContent: {
+      handler(pc) { this.resolveMedia(pc) },
+      immediate: true
+    }
+  },
+  methods: {
+    async resolveMedia(pc) {
+      const ids = [pc.video, pc.videoPic].filter(pic => pic && !pic.startsWith('http')).join(',')
+      if (ids) this.urlCache = await resolveOssUrls(ids)
     }
   }
 }

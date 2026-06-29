@@ -39,7 +39,7 @@
 
 <script>
 import { listGoods } from '@/api/mall/goods'
-import config from '@/config'
+import { resolveOssUrls } from '@/utils/oss'
 
 export default {
   data() {
@@ -54,7 +54,8 @@ export default {
       pageSize: 20,
       statusBarHeight: 0,
       navBarHeight: 0,
-      menuButtonHeight: 0
+      menuButtonHeight: 0,
+      urlCache: new Map()
     }
   },
   onLoad(options) {
@@ -103,6 +104,8 @@ export default {
           }
           this.noMore = list.length < this.pageSize
           this.hasLoaded = true
+          // 解析商品图片
+          this.resolveGoodsImages(list)
         }
       } catch (e) {
         console.error('加载商品失败', e)
@@ -116,10 +119,17 @@ export default {
       this.page++
       this.loadGoods()
     },
+    async resolveGoodsImages(list) {
+      const picIds = list.map(item => item.headPic).filter(pic => pic && !pic.startsWith('http')).join(',')
+      if (picIds) {
+        const newCache = await resolveOssUrls(picIds)
+        this.urlCache = new Map([...this.urlCache, ...newCache])
+      }
+    },
     getImgUrl(pic) {
       if (!pic) return ''
       if (pic.startsWith('http')) return pic
-      return config.baseUrl + '/resource/oss/download/' + pic
+      return this.urlCache.get(pic) || ''
     },
     goDetail(item) {
       uni.navigateTo({ url: '/pages/goods/detail/index?id=' + item.goodsId })

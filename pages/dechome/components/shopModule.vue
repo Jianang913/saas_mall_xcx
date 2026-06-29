@@ -24,14 +24,18 @@
 </template>
 
 <script>
+import { resolveOssUrls } from '@/utils/oss'
+
 export default {
   name: 'ShopModule',
   props: {
     data: { type: Object, default: () => ({}) }
   },
+  data() {
+    return { urlCache: new Map() }
+  },
   computed: {
     goodsList() {
-      // 优先从 re 获取
       if (this.data.re && this.data.re.length) return this.data.re
       const content = this.data.pageContent
       if (Array.isArray(content)) return content
@@ -39,16 +43,27 @@ export default {
       return []
     }
   },
+  watch: {
+    goodsList: {
+      handler(list) { this.resolveImages(list) },
+      immediate: true
+    }
+  },
   methods: {
+    async resolveImages(list) {
+      const picIds = list
+        .map(g => g.goodsImage || g.outPic)
+        .filter(pic => pic && !pic.startsWith('http'))
+        .join(',')
+      if (picIds) this.urlCache = await resolveOssUrls(picIds)
+    },
     formatImage(pic) {
       if (!pic) return ''
       if (pic.startsWith('http')) return pic
-      const app = getApp()
-      return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
+      return this.urlCache.get(pic) || ''
     },
     formatPrice(price) {
       if (!price) return '0.00'
-      // 后端存的是分，需要除以100
       return (price / 100).toFixed(2)
     }
   }

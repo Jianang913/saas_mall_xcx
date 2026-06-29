@@ -129,6 +129,7 @@
 import { getGoods, listGoodsSpe, collectGoods, cancelCollect } from '@/api/mall/goods'
 import { addCart } from '@/api/mall/cart'
 import { getToken } from '@/utils/auth'
+import { resolveOssUrls } from '@/utils/oss'
 
 export default {
   data() {
@@ -142,7 +143,8 @@ export default {
       actionType: 'cart',
       buyNum: 1,
       selectedSpecs: {},
-      isCollected: false
+      isCollected: false,
+      skuUrlCache: new Map()
     }
   },
   computed: {
@@ -161,8 +163,8 @@ export default {
       if (!sku || !sku.spePic) return ''
       const pic = sku.spePic
       if (pic.startsWith('http')) return pic
-      const app = getApp()
-      return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
+      // sku图片在loadGoods时已解析到缓存
+      return this.skuUrlCache.get(pic) || ''
     },
     selectedSkuText() {
       const values = Object.values(this.selectedSpecs).filter(v => v)
@@ -185,14 +187,20 @@ export default {
           this.skuList = res.data.specList || []
           // 解析商品图片（后端字段是 headPic，存储的是 OSS ID）
           if (this.goods.headPic) {
-            const app = getApp()
-            const baseUrl = app.globalData.shopImg || ''
+            const urlMap = await resolveOssUrls(this.goods.headPic)
             this.goodsImages = this.goods.headPic.split(',')
               .filter(Boolean)
-              .map(pic => {
-                if (pic.startsWith('http')) return pic
-                return baseUrl + '/resource/oss/download/' + pic
-              })
+              .map(pic => pic.startsWith('http') ? pic : (urlMap.get(pic) || ''))
+          }
+          // 解析SKU图片
+          if (this.skuList.length) {
+            const skuPicIds = this.skuList
+              .map(sku => sku.spePic)
+              .filter(pic => pic && !pic.startsWith('http'))
+              .join(',')
+            if (skuPicIds) {
+              this.skuUrlCache = await resolveOssUrls(skuPicIds)
+            }
           }
           // 构建规格组
           if (this.skuList.length) {

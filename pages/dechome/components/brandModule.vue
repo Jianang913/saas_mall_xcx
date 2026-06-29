@@ -10,23 +10,36 @@
 </template>
 
 <script>
+import { resolveOssUrls } from '@/utils/oss'
+
 export default {
   name: 'BrandModule',
   props: {
     data: { type: Object, default: () => ({}) }
   },
+  data() {
+    return { urlCache: new Map() }
+  },
   computed: {
     list() { return this.data.re || [] }
   },
+  watch: {
+    list: {
+      handler(list) { this.resolveImages(list) },
+      immediate: true
+    }
+  },
   methods: {
+    async resolveImages(list) {
+      const picIds = list.map(item => item.picture).filter(pic => pic && !pic.startsWith('http')).join(',')
+      if (picIds) this.urlCache = await resolveOssUrls(picIds)
+    },
     formatImage(pic) {
       if (!pic) return ''
       if (pic.startsWith('http')) return pic
-      const app = getApp()
-      return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
+      return this.urlCache.get(pic) || ''
     },
     onClick(item) {
-      // 品牌点击跳转
       if (item.linkType && item.content) {
         uni.navigateTo({ url: item.content })
       }

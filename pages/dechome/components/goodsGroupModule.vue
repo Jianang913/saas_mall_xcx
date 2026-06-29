@@ -25,13 +25,15 @@
 </template>
 
 <script>
+import { resolveOssUrls } from '@/utils/oss'
+
 export default {
   name: 'GoodsGroupModule',
   props: {
     data: { type: Object, default: () => ({}) }
   },
   data() {
-    return { currentIndex: 0 }
+    return { currentIndex: 0, urlCache: new Map() }
   },
   computed: {
     groupList() {
@@ -42,15 +44,28 @@ export default {
       return group?.goodsDtos || group?.goodsList || []
     }
   },
+  watch: {
+    groupList: {
+      handler(list) { this.resolveImages(list) },
+      immediate: true
+    }
+  },
   methods: {
+    async resolveImages(list) {
+      const allGoods = list.flatMap(g => g.goodsDtos || g.goodsList || [])
+      const picIds = allGoods
+        .map(item => item.goodsImage || item.outPic)
+        .filter(pic => pic && !pic.startsWith('http'))
+        .join(',')
+      if (picIds) this.urlCache = await resolveOssUrls(picIds)
+    },
     switchTab(i) {
       this.currentIndex = i
     },
     formatImage(pic) {
       if (!pic) return ''
       if (pic.startsWith('http')) return pic
-      const app = getApp()
-      return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
+      return this.urlCache.get(pic) || ''
     },
     formatPrice(price) {
       if (!price) return '0.00'

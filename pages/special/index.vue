@@ -65,6 +65,7 @@
 <script>
 import { getSpecialPage, getSpecialClassifyGoods } from '@/api/mall/specialPage'
 import { getToken } from '@/utils/auth'
+import { resolveOssUrls } from '@/utils/oss'
 
 export default {
   data() {
@@ -76,7 +77,8 @@ export default {
       page: 1,
       pageSize: 20,
       loading: false,
-      noMore: false
+      noMore: false,
+      urlCache: new Map()
     }
   },
   async onShow() {
@@ -119,6 +121,11 @@ export default {
         const res = await getSpecialPage(pageId)
         if (res.data) {
           this.pageData = res.data
+          // 解析banner图片
+          if (res.data.pagePic && !res.data.pagePic.startsWith('http')) {
+            const cache = await resolveOssUrls(res.data.pagePic)
+            this.urlCache = new Map([...this.urlCache, ...cache])
+          }
           // 设置导航栏标题
           if (res.data.pageName) {
             uni.setNavigationBarTitle({ title: res.data.pageName })
@@ -151,6 +158,8 @@ export default {
         if (res.data && res.data.specialGoodsPoList) {
           this.goodsList = res.data.specialGoodsPoList
           this.noMore = true
+          // 解析商品图片
+          this.resolveGoodsImages(this.goodsList)
         } else {
           this.goodsList = []
         }
@@ -167,11 +176,17 @@ export default {
       this.loadGoods()
     },
 
+    async resolveGoodsImages(list) {
+      const picIds = list.map(item => item.outPic).filter(pic => pic && !pic.startsWith('http')).join(',')
+      if (picIds) {
+        const cache = await resolveOssUrls(picIds)
+        this.urlCache = new Map([...this.urlCache, ...cache])
+      }
+    },
     formatImage(pic) {
       if (!pic) return ''
       if (pic.startsWith('http')) return pic
-      const app = getApp()
-      return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
+      return this.urlCache.get(pic) || ''
     },
 
     goDetail(item) {

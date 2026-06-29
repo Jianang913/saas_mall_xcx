@@ -39,6 +39,7 @@
 
 <script>
 import { handleLink } from '@/utils/linkType'
+import { resolveOssUrls } from '@/utils/oss'
 
 export default {
   name: 'DiamondNav',
@@ -49,7 +50,8 @@ export default {
   },
   data() {
     return {
-      currentPage: 0
+      currentPage: 0,
+      urlCache: new Map()
     }
   },
   computed: {
@@ -60,11 +62,9 @@ export default {
       if (content && content.list) return content.list
       return []
     },
-    // show='1' 单行滑动，show='2' 双行排列（默认）
     layoutClass() {
       return this.data.show === '1' ? 'layout-scroll' : 'layout-grid'
     },
-    // 分页逻辑：每页5个
     pages() {
       const arr = this.navList
       const result = []
@@ -73,37 +73,34 @@ export default {
       }
       return result
     },
-    // 动态样式：合并连续模块的间距
     dynamicStyle() {
       let top, right, bottom, left
-
       if (this.data.show === '1') {
-        // 单行滑动
-        top = '12rpx'
-        right = '16rpx'
-        left = '16rpx'
-        // 有三个点时底部大一点，没三个点时小一点
+        top = '12rpx'; right = '16rpx'; left = '16rpx'
         bottom = this.pages.length > 1 ? '12rpx' : '6rpx'
       } else {
-        // 双行排列
-        top = '20rpx'
-        right = '16rpx'
-        bottom = '20rpx'
-        left = '16rpx'
+        top = '20rpx'; right = '16rpx'; bottom = '20rpx'; left = '16rpx'
       }
-
       if (this.mergeTop) top = '0rpx'
       if (this.mergeBottom) bottom = '0rpx'
-
       return `padding: ${top} ${right} ${bottom} ${left};`
     }
   },
+  watch: {
+    navList: {
+      handler(list) { this.resolveImages(list) },
+      immediate: true
+    }
+  },
   methods: {
+    async resolveImages(list) {
+      const picIds = list.map(item => item.picture || item.icon).filter(pic => pic && !pic.startsWith('http')).join(',')
+      if (picIds) this.urlCache = await resolveOssUrls(picIds)
+    },
     formatImage(pic) {
       if (!pic) return ''
       if (pic.startsWith('http')) return pic
-      const app = getApp()
-      return (app.globalData.shopImg || '') + '/resource/oss/download/' + pic
+      return this.urlCache.get(pic) || ''
     },
     onClick(item) {
       handleLink(item.linkType, item.content, item.contentName)
