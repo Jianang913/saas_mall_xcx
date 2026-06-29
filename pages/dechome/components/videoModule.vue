@@ -1,6 +1,18 @@
 <template>
   <view class="video-module">
-    <video v-if="videoUrl" class="video-player" :src="videoUrl" :poster="posterUrl" object-fit="fill" />
+    <video
+      v-if="videoUrl"
+      class="video-player"
+      :src="videoUrl"
+      :poster="posterUrl"
+      :controls="true"
+      :autoplay="false"
+      :show-fullscreen-btn="true"
+      :show-play-btn="true"
+      :show-center-play-btn="true"
+      object-fit="cover"
+      :style="{ width: '100%', height: '400rpx' }"
+    />
     <view v-else class="video-empty">
       <text>暂无视频</text>
     </view>
@@ -39,10 +51,25 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.video-module { background: #000; }
-.video-player { width: 100%; height: 400rpx; }
+.video-module {
+  background: #000;
+  width: 100%;
+  height: 400rpx;
+  overflow: hidden;
+}
+
+.video-player {
+  width: 100%;
+  height: 400rpx;
+}
+
 .video-empty {
-  height: 300rpx; display: flex; align-items: center; justify-content: center;
-  background: #1a1a1a; color: #666; font-size: 26rpx;
+  height: 300rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  color: #666;
+  font-size: 26rpx;
 }
 </style>

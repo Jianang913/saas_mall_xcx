@@ -11,7 +11,12 @@
       indicator-active-color="#ffffff"
     >
       <swiper-item v-for="(item, index) in imageList" :key="index" @click="onClick(item)">
-        <image class="swiper-image" :src="formatImage(item.picture)" mode="aspectFill" />
+        <view class="slide-wrap">
+          <!-- 模糊背景：填满容器 -->
+          <image class="slide-bg" :src="formatImage(item.picture)" mode="aspectFill" />
+          <!-- 前景图：完整显示 -->
+          <image class="slide-img" :src="formatImage(item.picture)" mode="aspectFit" />
+        </view>
       </swiper-item>
     </swiper>
   </view>
@@ -27,7 +32,6 @@ export default {
   },
   computed: {
     imageList() {
-      // 优先从 re（旧项目格式）获取，兼容 pageContent
       if (this.data.re && this.data.re.length) return this.data.re
       const content = this.data.pageContent
       if (Array.isArray(content)) return content
@@ -51,6 +55,27 @@ export default {
 
 <style lang="scss" scoped>
 .swiper-module { width: 100%; }
-.swiper { width: 100%; height: 360rpx; }
-.swiper-image { width: 100%; height: 100%; }
+.swiper { width: 100%; height: 375rpx; }
+
+.slide-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.slide-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  filter: blur(40rpx);
+  transform: scale(1.2);
+}
+
+.slide-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
 </style>
