@@ -130,6 +130,7 @@ import { getGoods, listGoodsSpe, collectGoods, cancelCollect } from '@/api/mall/
 import { addCart } from '@/api/mall/cart'
 import { getToken } from '@/utils/auth'
 import { resolveOssUrls } from '@/utils/oss'
+import { navigateTo, switchTab } from '@/utils/navigate'
 
 export default {
   data() {
@@ -326,7 +327,7 @@ export default {
       }]
       uni.setStorageSync('carts', JSON.stringify(orderGoods))
       this.showSkuModal = false
-      this.$tab.navigateTo('/pages/order/confirm/index?type=detail')
+      navigateTo('/pages/order/confirm/index?type=detail')
     },
     async toggleCollect() {
       // 检查登录
@@ -350,10 +351,10 @@ export default {
       }
     },
     goHome() {
-      this.$tab.switchTab('/pages/dechome/index')
+      switchTab('/pages/dechome/index')
     },
     goCart() {
-      this.$tab.switchTab('/pages/cart/index')
+      switchTab('/pages/cart/index')
     },
     // 格式化详情内容，给图片添加样式限制
     formatDetailContent(html) {

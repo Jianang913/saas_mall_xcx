@@ -3,28 +3,33 @@
     "path": "pages/dechome/index",
     "style": {
       "navigationBarTitleText": "首页",
-      "navigationStyle": "custom"
+      "navigationStyle": "custom",
+      "initialRendering": "automatic"
     }
   }, {
     "path": "pages/classify/index",
     "style": {
-      "navigationBarTitleText": "分类"
+      "navigationBarTitleText": "分类",
+      "initialRendering": "automatic"
     }
   }, {
     "path": "pages/cart/index",
     "style": {
-      "navigationBarTitleText": "购物车"
+      "navigationBarTitleText": "购物车",
+      "initialRendering": "automatic"
     }
   }, {
     "path": "pages/special/index",
     "style": {
-      "navigationBarTitleText": "专题"
+      "navigationBarTitleText": "专题",
+      "initialRendering": "automatic"
     }
   }, {
     "path": "pages/mine/index",
     "style": {
       "navigationBarTitleText": "我的",
-      "navigationStyle": "custom"
+      "navigationStyle": "custom",
+      "initialRendering": "automatic"
     }
   }, {
     "path": "pages/login",
@@ -170,8 +175,10 @@
   },
   "globalStyle": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "中青商城",
+    "navigationBarTitleText": "万商联",
     "navigationBarBackgroundColor": "#FFFFFF",
-    "backgroundColor": "#F5F5F5"
+    "backgroundColor": "#FFFFFF",
+    "backgroundColorTop": "#FFFFFF",
+    "backgroundColorBottom": "#FFFFFF"
   }
 }

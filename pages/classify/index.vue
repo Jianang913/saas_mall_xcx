@@ -62,6 +62,7 @@
 <script>
 import { listGoodsCat } from '@/api/mall/goods'
 import { resolveOssUrls } from '@/utils/oss'
+import { navigateTo } from '@/utils/navigate'
 
 export default {
   data() {
@@ -136,10 +137,10 @@ export default {
       return this.urlCache.get(pic) || ''
     },
     goSearch() {
-      this.$tab.navigateTo('/pages/search/index')
+      navigateTo('/pages/search/index')
     },
     goGoodsList(third) {
-      this.$tab.navigateTo('/pages/goods/list/index?catId=' + third.goodsCatId + '&catName=' + (third.alias || third.catName))
+      navigateTo('/pages/goods/list/index?catId=' + third.goodsCatId + '&catName=' + (third.alias || third.catName))
     }
   }
 }

@@ -19,6 +19,8 @@
  *   21 客服         → open-type="contact"
  */
 
+import { navigateTo, switchTab } from '@/utils/navigate'
+
 /**
  * 根据 linkType 和 content 执行跳转
  * @param {number|string} linkType 链接类型（字典值）
@@ -45,7 +47,7 @@ export function handleLink(linkType, content, contentName) {
         const app = getApp()
         if (app) app.globalData.specialId = String(content)
       }
-      uni.switchTab({ url: '/pages/special/index' })
+      switchTab('/pages/special/index')
       // 通知专题页刷新数据
       setTimeout(() => { uni.$emit('specialPageRefresh', content) }, 300)
       break
@@ -53,14 +55,12 @@ export function handleLink(linkType, content, contentName) {
     case 2: // 装修页
       // content 存装修页 ID，跳转到首页并携带 specialId
       if (content) {
-        uni.navigateTo({
-          url: '/pages/dechome/index?specialId=' + encodeURIComponent(content)
-        })
+        navigateTo('/pages/dechome/index?specialId=' + encodeURIComponent(content))
       }
       break
 
     case 3: // 商品分类
-      uni.switchTab({ url: '/pages/classify/index' })
+      switchTab('/pages/classify/index')
       break
 
     case 6: // 全景图链接
@@ -84,14 +84,12 @@ export function handleLink(linkType, content, contentName) {
       break
 
     case 11: // 优惠券
-      uni.navigateTo({ url: '/pages/mine/coupon/index' })
+      navigateTo('/pages/mine/coupon/index')
       break
 
     case 12: // 自定义链接（H5 webview）
       if (content) {
-        uni.navigateTo({
-          url: '/pages/common/webview/index?url=' + encodeURIComponent(content)
-        })
+        navigateTo('/pages/common/webview/index?url=' + encodeURIComponent(content))
       }
       break
 
@@ -105,7 +103,7 @@ export function handleLink(linkType, content, contentName) {
 
     case 15: // 商品详情
       if (content) {
-        uni.navigateTo({ url: '/pages/goods/detail/index?id=' + encodeURIComponent(content) })
+        navigateTo('/pages/goods/detail/index?id=' + encodeURIComponent(content))
       }
       break
 
@@ -138,9 +136,9 @@ function navigateToPage(pagePath) {
   ]
 
   if (tabPages.includes(path)) {
-    uni.switchTab({ url: path })
+    switchTab(path)
   } else {
-    uni.navigateTo({ url: path })
+    navigateTo(path)
   }
 }
 

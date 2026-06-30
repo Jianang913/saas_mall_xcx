@@ -1,16 +1,15 @@
 <template>
-  <view class="goods-group-module">
-    <!-- 分类 Tab -->
-    <scroll-view scroll-x class="tab-bar" v-if="groupList.length > 0">
-      <view
-        v-for="(item, i) in groupList" :key="i"
-        class="tab-item" :class="{ active: currentIndex === i }"
-        @click="switchTab(i)"
-      >{{ item.title || '分组' + (i + 1) }}</view>
+  <view class="goods-group-module" :style="containerStyle">
+    <!-- Tab -->
+    <scroll-view scroll-x class="tab-bar" v-if="goodsList.length > 0">
+      <view class="tab-item active" :style="activeTabStyle">
+        <text class="tab-title" :style="'color:' + activeColor">{{ groupTitle }}</text>
+        <text v-if="showSubTitle === '2' && groupSubTitle" class="tab-sub">{{ groupSubTitle }}</text>
+      </view>
     </scroll-view>
     <!-- 商品列表 -->
     <view class="goods-list">
-      <view v-for="(item, i) in currentGoods" :key="i" class="goods-item" @click="goDetail(item)">
+      <view v-for="(item, i) in goodsList" :key="i" class="goods-item" @click="goDetail(item)">
         <image class="goods-img" :src="formatImage(item.goodsImage || item.outPic)" mode="aspectFill" />
         <view class="goods-info">
           <text class="goods-name">{{ item.goodsName }}</text>
@@ -33,34 +32,59 @@ export default {
     data: { type: Object, default: () => ({}) }
   },
   data() {
-    return { currentIndex: 0, urlCache: new Map() }
+    return { urlCache: new Map() }
   },
   computed: {
-    groupList() {
+    styleData() {
+      const style = this.data.style || {}
+      if (typeof style === 'string') { try { return JSON.parse(style) } catch { return {} } }
+      return style
+    },
+    // 后端 loadGoodsData 返回扁平的商品列表，放在 re 字段
+    goodsList() {
       return this.data.re || []
     },
-    currentGoods() {
-      const group = this.groupList[this.currentIndex]
-      return group?.goodsDtos || group?.goodsList || []
+    groupTitle() {
+      const list = this.data.re || []
+      if (list.length && list[0].title) return list[0].title
+      return '商品分组'
+    },
+    groupSubTitle() {
+      const list = this.data.re || []
+      if (list.length && list[0].subTitle) return list[0].subTitle
+      return ''
+    },
+    showSubTitle() {
+      return this.data.show || '1'
+    },
+    activeColor() {
+      return this.styleData.wordColor || '#409eff'
+    },
+    bgColor() {
+      return this.styleData.bkColor || '#ffffff'
+    },
+    containerStyle() {
+      return 'background-color:' + this.bgColor + ';'
+    },
+    activeTabStyle() {
+      const tabStyle = this.styleData.pic || '1'
+      if (tabStyle === '2') return 'background:' + this.activeColor + ';color:#fff;border-radius:24rpx;'
+      return ''
     }
   },
   watch: {
-    groupList: {
+    goodsList: {
       handler(list) { this.resolveImages(list) },
       immediate: true
     }
   },
   methods: {
     async resolveImages(list) {
-      const allGoods = list.flatMap(g => g.goodsDtos || g.goodsList || [])
-      const picIds = allGoods
+      const picIds = list
         .map(item => item.goodsImage || item.outPic)
         .filter(pic => pic && !pic.startsWith('http'))
         .join(',')
       if (picIds) this.urlCache = await resolveOssUrls(picIds)
-    },
-    switchTab(i) {
-      this.currentIndex = i
     },
     formatImage(pic) {
       if (!pic) return ''
@@ -79,13 +103,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.goods-group-module { background: #fff;  }
+.goods-group-module { }
 .tab-bar { white-space: nowrap; border-bottom: 1rpx solid #f0f0f0; padding: 0 12rpx; }
 .tab-item {
-  display: inline-block; padding: 16rpx 24rpx; font-size: 26rpx; color: #666;
+  display: inline-block; padding: 16rpx 24rpx; text-align: center;
   border-bottom: 4rpx solid transparent;
-  &.active { color: #333; font-weight: 600; border-bottom-color: #409eff; }
+  &.active { border-bottom-color: #409eff; }
 }
+.tab-title { font-size: 30rpx; color: #1a1a2e; font-weight: 700; letter-spacing: 2rpx; }
+.tab-sub { font-size: 20rpx; color: #8c939d; margin-top: 4rpx; display: block; }
 .goods-list { display: flex; flex-wrap: wrap; padding: 12rpx; gap: 12rpx; }
 .goods-item { width: calc(50% - 6rpx); border: 1rpx solid #f0f0f0; border-radius: 12rpx; overflow: hidden; }
 .goods-img { width: 100%; height: 320rpx; }

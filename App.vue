@@ -82,15 +82,28 @@ export default {
 
           this.globalData.tabBar.list = tabs
 
-          // 优先找装修页(linkType=2)，fallback 找指向 dechome 且有 linkUrlId 的系统页
-          let homeTab = tabs.find(t => String(t.linkType) === '2' && t.linkUrlId)
-          if (!homeTab) {
-            homeTab = tabs.find(t =>
-              String(t.linkType) === '0' &&
-              t.pagePath && t.pagePath.startsWith('/pages/dechome') &&
-              t.linkUrlId
-            )
+          // 解析导航样式配置（从第一条记录的 ext1）
+          if (res.data.length > 0 && res.data[0].ext1) {
+            const raw = res.data[0].ext1
+            // 框架可能已自动解析为对象，也可能是 JSON 字符串
+            if (typeof raw === 'object') {
+              this.globalData.navStyle = raw
+            } else {
+              try {
+                this.globalData.navStyle = JSON.parse(raw)
+              } catch (e) {
+                console.warn('解析导航样式配置失败', e)
+                this.globalData.navStyle = {}
+              }
+            }
+          } else {
+            this.globalData.navStyle = {}
           }
+          // 通知 tab-bar 更新样式
+          uni.$emit('navStyleUpdate')
+
+          // 只找装修页(linkType=2)设置 specialId，系统页面(linkType=0)不设置
+          const homeTab = tabs.find(t => String(t.linkType) === '2' && t.linkUrlId)
           if (homeTab && homeTab.linkUrlId) {
             this.globalData.specialId = homeTab.linkUrlId
           }
@@ -255,6 +268,7 @@ export default {
     dict: {},
     loginReady: false,
     tabBar: { list: [] },
+    navStyle: {},
     shopImg: config.baseUrl || '',
     appId: '',
     openId: '',
@@ -264,5 +278,16 @@ export default {
 </script>
 
 <style lang="scss">
-@import '@/static/scss/index.scss'
+@import '@/static/scss/index.scss';
+
+/* 全局页面背景色，防止跳转时穿透 */
+page {
+  background-color: #ffffff;
+}
+
+/* 所有页面根容器 */
+page > view {
+  min-height: 100vh;
+  background-color: #ffffff;
+}
 </style>

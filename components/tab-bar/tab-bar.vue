@@ -1,11 +1,11 @@
 <template>
-  <view class="tab-bar" v-if="tabList.length">
-    <view class="tab-bar-placeholder"></view>
-    <view class="tab-bar-content">
+  <view class="tab-bar" v-if="tabList.length && shouldShow" :class="tabBarClass">
+    <view class="tab-bar-placeholder" v-if="!isFloat"></view>
+    <view class="tab-bar-content" :style="tabBarStyle">
       <view
-        class="tab-item"
         v-for="(item, index) in tabList"
         :key="index"
+        class="tab-item"
         @click="onTabTap(item, index)"
       >
         <image
@@ -22,14 +22,56 @@
 </template>
 
 <script>
+import { navigateTo, switchTab } from '@/utils/navigate'
+
 export default {
   name: 'TabBar',
   data() {
     return {
-      tabList: []
+      tabList: [],
+      navStyle: {},
+      shouldShow: true,
+      supportsBlur: true  // 缓存检测结果
+    }
+  },
+  computed: {
+    isFloat() {
+      return this.navStyle.navPosition === 'float'
+    },
+    tabBarClass() {
+      return {
+        'tab-bar-float': this.isFloat
+      }
+    },
+    tabBarStyle() {
+      const bg = this.navStyle.navBackground || 'white'
+      const opacity = Math.max((this.navStyle.navOpacity ?? 100) / 100, 0.3)
+
+      if (bg === 'transparent') {
+        return { background: `rgba(255, 255, 255, ${opacity * 0.3})` }
+      } else if (bg === 'blur') {
+        const blurVal = Math.round((1 - opacity) * 15 + 5)
+        // 使用缓存的检测结果
+        if (this.supportsBlur) {
+          return {
+            background: `rgba(255, 255, 255, ${0.2 + opacity * 0.6})`,
+            '-webkit-backdrop-filter': `blur(${blurVal}px)`,
+            'backdrop-filter': `blur(${blurVal}px)`
+          }
+        } else {
+          // 降级方案：用更不透明的背景
+          return {
+            background: `rgba(255, 255, 255, ${0.8 + opacity * 0.2})`
+          }
+        }
+      }
+      return { background: '#ffffff' }
     }
   },
   created() {
+    console.log('=== tab-bar created ===')
+    // 初始化时检测一次 backdrop-filter 支持
+    this.supportsBlur = this.checkBackdropSupport()
     this.initTabBar()
     // 监听专题页切换事件，更新选中态
     this._onRefresh = () => this.updateSelected()
@@ -64,9 +106,23 @@ export default {
     _loadTabs(app) {
       const tabs = app.globalData.tabBar.list
       if (tabs && tabs.length) {
-        this.tabList = tabs.map(tab => ({ ...tab }))
+        this.tabList = tabs.map(tab => {
+          // 解析 ext2 中的 showNavBar 配置
+          let showNavBar = true
+          if (tab.ext2) {
+            try {
+              const config = typeof tab.ext2 === 'object' ? tab.ext2 : JSON.parse(tab.ext2)
+              showNavBar = config.showNavBar !== false
+            } catch (e) {
+              // 解析失败，使用默认值
+            }
+          }
+          return { ...tab, showNavBar }
+        })
         this.updateSelected()
       }
+      // 加载导航样式配置
+      this.navStyle = app.globalData.navStyle || {}
     },
 
     updateSelected() {
@@ -77,6 +133,14 @@ export default {
       if (!currentPage) return
       const currentRoute = '/' + currentPage.route
       const specialId = app.globalData.specialId
+
+      // 检查当前页面是否应该显示导航栏
+      const currentTab = this.tabList.find(tab => {
+        const tabPath = tab.pagePath || ''
+        const tabBasePath = tabPath.split('?')[0]
+        return tabBasePath === currentRoute
+      })
+      this.shouldShow = currentTab ? currentTab.showNavBar !== false : true
 
       this.tabList.forEach(tab => {
         tab.selected = false
@@ -112,14 +176,25 @@ export default {
         }
       }
 
-      // 跳转
+      // linkType=0（系统页面）：直接跳转 pagePath，不设置 specialId
+      if (item.linkType === 0) {
+        const targetPath = item.pagePath || '/pages/dechome/index'
+        const basePath = targetPath.split('?')[0]
+        if (this.isTabPage(targetPath)) {
+          switchTab(basePath)
+        } else {
+          navigateTo(targetPath)
+        }
+        return
+      }
+
+      // linkType=1/2（专题页/装修页）：设置 specialId 后跳转
       const targetPath = item.pagePath || '/pages/dechome/index'
       const basePath = targetPath.split('?')[0]
       if (this.isTabPage(targetPath)) {
-        // switchTab 不支持 query 参数，装修页通过 globalData.specialId 传递
-        uni.switchTab({ url: basePath })
+        switchTab(basePath)
       } else {
-        uni.navigateTo({ url: targetPath })
+        navigateTo(targetPath)
       }
     },
 
@@ -134,6 +209,26 @@ export default {
       // 去掉查询参数再匹配（如 /pages/dechome/index?specialId=xxx）
       const basePath = path.split('?')[0]
       return tabPages.includes(basePath)
+    },
+
+    // 检测是否支持 backdrop-filter
+    checkBackdropSupport() {
+      // 小程序中通过系统信息判断
+      const sysInfo = uni.getSystemInfoSync()
+      const platform = sysInfo.platform
+      const version = sysInfo.version
+
+      // iOS 基本都支持
+      if (platform === 'ios') return true
+
+      // Android 高版本支持（微信 8.0+）
+      if (platform === 'android') {
+        const majorVersion = parseInt(version.split('.')[0])
+        return majorVersion >= 8
+      }
+
+      // 开发工具默认支持
+      return true
     }
   }
 }
@@ -146,11 +241,43 @@ export default {
   left: 0;
   right: 0;
   z-index: 999;
+
+  // 悬浮模式
+  &.tab-bar-float {
+    bottom: 80rpx;
+    left: 20rpx;
+    right: 20rpx;
+
+    .tab-bar-content {
+      border-radius: 40rpx;
+      box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.12);
+      height: 90rpx;
+      padding-bottom: 0;
+    }
+
+    .tab-bar-placeholder {
+      display: none;
+    }
+  }
 }
 
 .tab-bar-placeholder {
+
   height: calc(100rpx + constant(safe-area-inset-bottom));
   height: calc(100rpx + env(safe-area-inset-bottom));
+
+}
+
+.debug-info {
+  position: absolute;
+  top: -40rpx;
+  left: 0;
+  font-size: 20rpx;
+  color: #f00;
+  background: #ff0;
+  padding: 4rpx 8rpx;
+  z-index: 9999;
+  white-space: nowrap;
 }
 
 .tab-bar-content {
@@ -161,6 +288,7 @@ export default {
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
   box-sizing: content-box;
+  transition: all 0.3s ease;
 }
 
 .tab-item {
