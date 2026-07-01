@@ -1,5 +1,5 @@
 <template>
-  <view class="tab-bar" v-if="tabList.length && shouldShow" :class="tabBarClass">
+  <view class="tab-bar" v-if="tabList.length" :class="tabBarClass">
     <view class="tab-bar-placeholder" v-if="!isFloat"></view>
     <view class="tab-bar-content" :style="tabBarStyle">
       <view
@@ -30,7 +30,6 @@ export default {
     return {
       tabList: [],
       navStyle: {},
-      shouldShow: true,
       supportsBlur: true  // 缓存检测结果
     }
   },
@@ -70,15 +69,24 @@ export default {
   },
   created() {
     console.log('=== tab-bar created ===')
-    // 初始化时检测一次 backdrop-filter 支持
-    this.supportsBlur = this.checkBackdropSupport()
+    // 延迟检测 backdrop-filter 支持
+    try {
+      this.supportsBlur = this.checkBackdropSupport()
+    } catch (e) {
+      console.warn('检测 backdrop-filter 支持失败', e)
+      this.supportsBlur = true
+    }
     this.initTabBar()
     // 监听专题页切换事件，更新选中态
     this._onRefresh = () => this.updateSelected()
     uni.$on('specialPageRefresh', this._onRefresh)
   },
   beforeUnmount() {
-    if (this._retryTimer) clearTimeout(this._retryTimer)
+    this._destroyed = true
+    if (this._retryTimer) {
+      clearTimeout(this._retryTimer)
+      this._retryTimer = null
+    }
     uni.$off('specialPageRefresh', this._onRefresh)
   },
   methods: {
@@ -106,19 +114,7 @@ export default {
     _loadTabs(app) {
       const tabs = app.globalData.tabBar.list
       if (tabs && tabs.length) {
-        this.tabList = tabs.map(tab => {
-          // 解析 ext2 中的 showNavBar 配置
-          let showNavBar = true
-          if (tab.ext2) {
-            try {
-              const config = typeof tab.ext2 === 'object' ? tab.ext2 : JSON.parse(tab.ext2)
-              showNavBar = config.showNavBar !== false
-            } catch (e) {
-              // 解析失败，使用默认值
-            }
-          }
-          return { ...tab, showNavBar }
-        })
+        this.tabList = tabs.map(tab => ({ ...tab }))
         this.updateSelected()
       }
       // 加载导航样式配置
@@ -133,14 +129,6 @@ export default {
       if (!currentPage) return
       const currentRoute = '/' + currentPage.route
       const specialId = app.globalData.specialId
-
-      // 检查当前页面是否应该显示导航栏
-      const currentTab = this.tabList.find(tab => {
-        const tabPath = tab.pagePath || ''
-        const tabBasePath = tabPath.split('?')[0]
-        return tabBasePath === currentRoute
-      })
-      this.shouldShow = currentTab ? currentTab.showNavBar !== false : true
 
       this.tabList.forEach(tab => {
         tab.selected = false
@@ -213,22 +201,28 @@ export default {
 
     // 检测是否支持 backdrop-filter
     checkBackdropSupport() {
-      // 小程序中通过系统信息判断
-      const sysInfo = uni.getSystemInfoSync()
-      const platform = sysInfo.platform
-      const version = sysInfo.version
+      try {
+        const sysInfo = uni.getSystemInfoSync()
+        if (!sysInfo) return true
 
-      // iOS 基本都支持
-      if (platform === 'ios') return true
+        const platform = sysInfo.platform
+        const version = sysInfo.version || ''
 
-      // Android 高版本支持（微信 8.0+）
-      if (platform === 'android') {
-        const majorVersion = parseInt(version.split('.')[0])
-        return majorVersion >= 8
+        // iOS 基本都支持
+        if (platform === 'ios') return true
+
+        // Android 高版本支持（微信 8.0+）
+        if (platform === 'android') {
+          const majorVersion = parseInt(version.split('.')[0]) || 0
+          return majorVersion >= 8
+        }
+
+        // 开发工具默认支持
+        return true
+      } catch (e) {
+        console.warn('检测 backdrop-filter 支持失败', e)
+        return true
       }
-
-      // 开发工具默认支持
-      return true
     }
   }
 }
