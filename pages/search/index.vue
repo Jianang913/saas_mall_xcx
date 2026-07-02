@@ -127,9 +127,11 @@ export default {
         }
 
         const res = await searchGoods(params)
-        if (res.rows) {
-          this.goodsList = this.page === 1 ? res.rows : [...this.goodsList, ...res.rows]
-          if (res.rows.length < this.pageSize) {
+        if (res.code === 200) {
+          const data = res.data || {}
+          const list = data.rows || []
+          this.goodsList = this.page === 1 ? list : [...this.goodsList, ...list]
+          if (list.length < this.pageSize) {
             this.noMore = true
           }
         }

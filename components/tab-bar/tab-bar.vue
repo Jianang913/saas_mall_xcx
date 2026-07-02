@@ -211,7 +211,7 @@ export default {
         // iOS 基本都支持
         if (platform === 'ios') return true
 
-        // Android 高版本支持（微信 8.0+）
+        // Android 微信 8.0+ 支持 backdrop-filter
         if (platform === 'android') {
           const majorVersion = parseInt(version.split('.')[0]) || 0
           return majorVersion >= 8

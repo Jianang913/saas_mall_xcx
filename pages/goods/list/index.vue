@@ -96,7 +96,8 @@ export default {
         })
 
         if (res.code === 200) {
-          const list = res.rows || []
+          const data = res.data || {}
+          const list = data.rows || []
           if (this.page === 1) {
             this.goodsList = list
           } else {
