@@ -168,7 +168,8 @@ export default {
     async payOrder(order) {
       try {
         const res = await wxPay({ orderId: order.orderId })
-        if (res.data) {
+        if (res.data && res.data.appId) {
+          // 真实支付：调起微信支付
           uni.requestPayment({
             ...res.data,
             success: () => {
@@ -179,6 +180,10 @@ export default {
               this.$modal.msgError('支付取消')
             }
           })
+        } else {
+          // 开发模式：后端已模拟支付成功，直接刷新
+          this.$modal.msgSuccess('支付成功（开发模式）')
+          this.switchTab(this.currentTab)
         }
       } catch (e) {
         console.error('支付失败', e)
